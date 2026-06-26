@@ -24,11 +24,11 @@ const NAV: { group: string; items: NavItem[] }[] = [
     items: [
       { href: "/organizations", label: "Organizations", icon: "building" },
       { href: "/people", label: "People", icon: "users" },
-      { href: "/deals", label: "Deals", icon: "deal", soon: true },
-      { href: "/pilots", label: "Pilots", icon: "flask", soon: true },
-      { href: "/partners", label: "Partners", icon: "link", soon: true },
-      { href: "/interactions", label: "Interactions", icon: "chat", soon: true },
-      { href: "/waitlist", label: "B2C waitlist", icon: "list", soon: true },
+      { href: "/deals", label: "Deals", icon: "deal" },
+      { href: "/pilots", label: "Pilots", icon: "flask" },
+      { href: "/partners", label: "Partners", icon: "link" },
+      { href: "/interactions", label: "Interactions", icon: "chat" },
+      { href: "/waitlist", label: "B2C waitlist", icon: "list" },
     ],
   },
   {
