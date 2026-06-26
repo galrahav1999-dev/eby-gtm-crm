@@ -10,6 +10,9 @@
     "gen:data": "node scripts/generate-data.mjs"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
     "@types/topojson-client": "^3.1.5",
     "mapbox-gl": "3.5.2",
     "maplibre-gl": "^4.7.1",
@@ -17,11 +20,14 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-globe.gl": "2.27.4",
+    "react-hook-form": "^7.80.0",
     "three": "^0.171.0",
     "topojson-client": "^3.1.0",
+    "zod": "^4.4.3",
     "zustand": "4.5.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.3",
     "@types/node": "20.14.10",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
