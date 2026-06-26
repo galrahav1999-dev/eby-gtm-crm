@@ -208,6 +208,39 @@ export const INTERACTION_TYPES = [
   "Partner call",
 ] as const;
 
+/**
+ * Map of field_key -> default option list. This is the SEED for the editable
+ * `field_options` table and the offline FALLBACK the app uses if the database
+ * options cannot be read. The live source of truth at runtime is the database.
+ */
+export const FALLBACK_OPTIONS: Record<string, readonly string[]> = {
+  owner: OWNERS,
+  org_type: ORG_TYPES,
+  age_band: AGE_BANDS,
+  denomination: DENOMINATIONS,
+  country: COUNTRIES,
+  person_role: PERSON_ROLES,
+  lifecycle: LIFECYCLES,
+  source: SOURCES,
+  segment: SEGMENTS,
+  org_status: ORG_STATUSES,
+  b2b_stage: B2B_STAGES,
+  yes_no_unknown: YES_NO_UNKNOWN,
+  eval_timing: EVAL_TIMINGS,
+  decision_timeline: DECISION_TIMELINES,
+  closed_lost_reason: CLOSED_LOST_REASONS,
+  closed_won_reason: CLOSED_WON_REASONS,
+  priority: PRIORITIES,
+  pilot_stage: PILOT_STAGES,
+  urgency: URGENCIES,
+  feedback_cadence: FEEDBACK_CADENCES,
+  partner_type: PARTNER_TYPES,
+  partner_stage: PARTNER_STAGES,
+  interaction_type: INTERACTION_TYPES,
+};
+
+export type FieldKey = keyof typeof FALLBACK_OPTIONS;
+
 // Convenience union types derived from the lists above.
 export type Owner = (typeof OWNERS)[number];
 export type OrgType = (typeof ORG_TYPES)[number];
