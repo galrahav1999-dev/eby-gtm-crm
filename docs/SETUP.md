@@ -31,6 +31,11 @@ The CRM has two parts:
    of it, paste it into the SQL Editor, and click **Run**.
 3. You should see "Success". This created the 7 tables and their links.
 
+   Run the migration files **in order**: `0001_init.sql`, then
+   `0002_options_and_audit.sql`, then `0003_ai_ingestions.sql`, then
+   `0004_storage.sql` (the last one sets up the private bucket for call
+   recordings).
+
 ## Step 4: Load the team's existing contacts (optional but recommended)
 
 1. Still in the SQL Editor, open `supabase/seed.sql`, copy all of it, paste, **Run**.
@@ -54,6 +59,19 @@ The CRM has two parts:
 2. In **Authentication** → **Providers** → **Email**, turn **off** public
    sign-ups so only invited teammates can log in.
 3. Each teammate gets an email link to set their password and sign in.
+
+---
+
+## Step 7: Turn on the AI logger (optional)
+
+The AI logger (paste notes or upload a call recording, get clean draft records)
+needs API keys, set as environment variables (locally in `.env.local`, or in
+Vercel):
+- `ANTHROPIC_API_KEY` — required for the AI extraction.
+- `OPENAI_API_KEY` — required only for transcribing uploaded audio.
+- `ANTHROPIC_MODEL` — optional, defaults to a strong, cost-balanced model.
+
+Without these the rest of the app works fully; the logger just shows a notice.
 
 ---
 
