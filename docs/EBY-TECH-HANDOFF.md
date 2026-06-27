@@ -5,7 +5,7 @@
 > file layout, UX principles, what is built, and what is next. Keep it updated
 > every session. Author/owner: Gal. Built with Claude Code.
 
-Last updated: 2026-06-26.
+Last updated: 2026-06-27.
 
 ---
 
@@ -70,7 +70,9 @@ values, then `npm install && npm run dev` (http://localhost:3000).
 3. `supabase/migrations/0003_ai_ingestions.sql` — AI logger runs.
 4. `supabase/migrations/0004_storage.sql` — private `recordings` storage bucket
    (Supabase-only; uses the `storage` schema, so it is not run in local test PG).
-5. `supabase/seed.sql` — the team's 20 real discovery contacts + 2 orgs + 1
+5. `supabase/migrations/0005_soft_delete.sql` — `archived_at` on all record
+   tables (soft delete).
+6. `supabase/seed.sql` — the team's 20 real discovery contacts + 2 orgs + 1
    interaction (IDs and verbatim notes preserved; "Misha" mapped to "Michael").
 
 Verification without a live DB: SQL is tested with PGlite
@@ -140,6 +142,35 @@ bank aggregating verbatim quotes; stage-exit-criteria hints on deals.
 Data flow (write): form (client) -> Server Action (server, validates + nulls
 empties) -> Supabase insert/update (RLS) -> logAudit -> revalidatePath -> redirect.
 
+### Field-registry framework (Phase 1, live for People + Organizations)
+The big architectural backbone (see docs/EBY-STRATEGY-AND-ROADMAP.md). Each object
+is described ONCE in `lib/schema/<object>.ts` (an `ObjectDef` with `FieldDef[]`:
+name, label, widget, optionsKey, addNew, fkTo, inlineCreate, required, section,
+help, showInList/Detail). Generic components render everything from it:
+- Dynamic routes `app/(app)/[object]/{page,new,[id],[id]/edit}` (list/create/
+  detail/edit) for any registered object. Static object folders (deals, pilots,
+  partners, interactions, waitlist) still exist and take precedence until ported;
+  the registry `FRAMEWORK_OBJECTS` controls which keys the `[object]` route serves.
+- `components/crm/RecordForm` + `FieldInput` choose the widget automatically
+  (text/email/textarea/number/money/date/select/combobox(+add-new)/country/fk).
+- `components/crm/RecordPicker`: searchable FK with inline create of ANY object
+  via `/api/records/[object]` (quickCreate fields from the target's def).
+- `lib/crud.ts`: generic create/update/archive with validation + audit, driven by
+  the def. `lib/record-actions.ts`: generic server actions bound by object key.
+  `lib/record-data.ts`: list rows, FK label resolution, form bundle, linked records.
+
+**To add or change a field now:** edit the object's `FieldDef` in `lib/schema/*`
+(+ a column migration if it is new). It appears in list, detail, form, search,
+and validation automatically. Hover help = set `help` on the field. No bespoke
+edits. This is what stops reactive patching.
+
+**Hover help:** `HelpTip` (a "?" tooltip) is threaded through every field label
+(form.tsx Wrap, Combobox, RecordPicker), driven by `FieldDef.help`.
+
+**Soft delete:** all record tables have `archived_at` (migration 0005). Delete in
+the UI = Archive (recoverable); lists filter `archived_at is null`. Generic
+`archiveRecord` sets the timestamp and audits it.
+
 ---
 
 ## 7. File map
@@ -181,6 +212,15 @@ lib/
   geo.ts                  place -> lat/lng for the map
   pickers.ts              org/people/deal options for FK pickers
   ai/{extract,transcribe,commit}.ts   AI logger pipeline
+  schema/{types,registry,organizations,people}.ts   field-registry (the def per object)
+  crud.ts                 generic create/update/archive + validation + audit
+  record-actions.ts       generic server actions (bound by object key)
+  record-data.ts          list rows, FK label resolution, form bundle, linked
+  countries.ts            full country list for the country widget
+app/(app)/[object]/{page,new,[id],[id]/edit}   generic routes for registry objects
+app/api/records/[object]/route.ts   generic inline quick-create
+components/crm/{RecordForm,RecordPicker,Combobox,BackButton}.tsx   framework UI
+supabase/migrations/0005_soft_delete.sql   archived_at on all tables
 supabase/migrations/*.sql, supabase/seed.sql
 sentry.{client,server,edge}.config.ts, instrumentation.ts
 docs/                     handoff, plan, setup, go-live, decisions, design brief,
@@ -334,29 +374,40 @@ ids out of committed artifacts other than this config note.
 Auth + shell; full CRUD for all 7 objects; editable dropdowns + Admin; audit log
 + Activity; dashboard (+25-interview tracker); world map (basic); AI logger +
 audio pipeline; Sentry-ready; searchable full-country picker; inline org creation;
-"+ Add" comboboxes on Org and Person forms; Back buttons on all create/edit/detail
-pages. Seeded with real data. Build green; deployed to Vercel.
+Back buttons on all create/edit/detail pages. Seeded with real data. Deployed.
+
+**Phase 1 framework DONE (live for People + Organizations):** field registry +
+generic routes/form/detail/CRUD, searchable FK with inline create of any object,
+hover help on every field, soft delete (archive). People and Organizations now
+render entirely from `lib/schema/*`. Build green; verified on real Postgres.
 
 ---
 
-## 12. Status: next / backlog (functionality-first ordering)
+## 12. Status: next / backlog (per the approved roadmap order)
 
-1. **Roll out searchable inputs everywhere:** apply `Combobox` (search + add) and
-   FK pickers with inline create to Deal / Pilot / Partner / Interaction forms
-   (today they use plain selects / `RecordSelect`). Add a searchable people-picker
-   with inline create.
-2. **Per-owner "my work" view + global search** across records.
-3. **Saved views / filters** per object; **bulk edit** (owner, stage, segment).
-4. **Duplicate detection / merge** for people and orgs.
-5. **CSV import/export**; **best-first-customer score**; **quote/signal bank**.
-6. **Globe rebuild** from the original cockpit (starfield, arcs, drill-down),
-   tailored to EBY data. On hold pending design direction. Open choices: point
-   color (segment vs owner vs orgs/people), arcs to Israel, drill-down depth,
-   theme.
-7. **Apply the bright design system** (from docs/EBY-DESIGN-SYSTEM-BRIEF.md) across
-   the app once generated.
-8. **HubSpot export** mapping (display_ids make this clean); optional one-way
-   Google Sheet mirror.
+Approved order: framework (1) -> port all (2) -> Power UX (3) -> AI v2 (4) ->
+identity/integrity (5) -> design system (6). Decisions locked: per-user AI keys
+(server-encrypted, your key optional admin fallback); default models Claude
+(Sonnet) + Whisper, overridable; soft delete; hover help everywhere.
+
+- **Phase 2 (next): port the remaining objects to the framework.** Write
+  `lib/schema/{deals,pilots,partners,interactions,waitlist_cohorts}.ts`, add them
+  to the registry, delete the bespoke static folders. Needs: `appendOnly` support
+  in the generic detail/routes (interactions = no edit/delete) and a custom list
+  renderer for waitlist (computed funnel %). Then every object has searchable FK +
+  inline create + hover help + soft delete for free.
+- **Phase 3 Power UX:** global search, command palette (Cmd-K), saved views /
+  filters per object, "my work" home (next steps due per owner), bulk edit,
+  deals kanban.
+- **Phase 4 AI logger v2:** per-user keys + Settings page (encrypted), provider-
+  agnostic pipeline (same prompt/schema/parsing), the funnel (audio/text +
+  target-or-create), dedupe-on-commit, golden tests, cost/usage logging.
+- **Phase 5 identity + integrity:** `profiles`/users + roles, dedupe on manual
+  create, optimistic concurrency, archive/restore UI.
+- **Phase 6 design system:** apply the bright EBY tokens across the shared
+  framework components (restyle once), then the globe rebuild.
+- **Phase 7 growth:** HubSpot export, Sheet mirror, custom-fields-from-UI,
+  best-first-customer score, quote/signal bank.
 
 ---
 
