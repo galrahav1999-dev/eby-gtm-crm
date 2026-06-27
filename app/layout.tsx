@@ -5,9 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Cockpit — Sales Pipeline, in orbit",
-  description:
-    "A cinematic, multi-rep sales-pipeline cockpit. Globe, map and board views over one live book of business.",
+  title: "EBY GTM",
+  description: "EBY go-to-market workspace: contacts, schools, deals, and discovery, in one place.",
 };
 
 export const viewport: Viewport = {
