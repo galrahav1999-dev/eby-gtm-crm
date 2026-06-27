@@ -3,7 +3,10 @@
 import Link from "next/link";
 import type { OptionsMap } from "@/lib/options";
 import type { Person } from "@/lib/db-types";
-import { TextField, TextArea, SelectField, DateField, RecordSelect, SubmitButton } from "./form";
+import { COUNTRIES_FULL } from "@/lib/countries";
+import { TextField, TextArea, DateField, SubmitButton } from "./form";
+import { Combobox } from "./Combobox";
+import { OrgPicker } from "./OrgPicker";
 
 export function PersonForm({
   action,
@@ -23,14 +26,20 @@ export function PersonForm({
           <TextField name="first_name" label="First name" defaultValue={person?.first_name} />
           <TextField name="last_name" label="Last name" defaultValue={person?.last_name} />
           <TextField name="email" label="Email" defaultValue={person?.email} placeholder="name@example.com" />
-          <SelectField name="role_title" label="Role / title" options={options.person_role ?? []} defaultValue={person?.role_title} />
-          <RecordSelect name="org_id" label="Organization" records={orgs} defaultValue={person?.org_id} hint="Link to a school / org, or leave blank for an individual." />
-          <SelectField name="segment" label="Segment" options={options.segment ?? []} defaultValue={person?.segment} />
+          <Combobox name="role_title" label="Role / title" options={options.person_role ?? []} defaultValue={person?.role_title} fieldKey="person_role" />
+          <OrgPicker
+            records={orgs}
+            defaultValue={person?.org_id}
+            hint="Search, or create a new organization without leaving this page."
+            orgTypes={options.org_type ?? []}
+            segments={options.segment ?? []}
+          />
+          <Combobox name="segment" label="Segment" options={options.segment ?? []} defaultValue={person?.segment} fieldKey="segment" />
           <TextField name="city" label="City" defaultValue={person?.city} />
-          <SelectField name="country" label="Country" options={options.country ?? []} defaultValue={person?.country} />
-          <SelectField name="source" label="Source" options={options.source ?? []} defaultValue={person?.source} />
-          <SelectField name="lifecycle" label="Lifecycle" options={options.lifecycle ?? []} defaultValue={person?.lifecycle} />
-          <SelectField name="owner" label="Owner" options={options.owner ?? []} defaultValue={person?.owner} />
+          <Combobox name="country" label="Country" options={COUNTRIES_FULL} defaultValue={person?.country} placeholder="Search countries…" />
+          <Combobox name="source" label="Source" options={options.source ?? []} defaultValue={person?.source} fieldKey="source" />
+          <Combobox name="lifecycle" label="Lifecycle" options={options.lifecycle ?? []} defaultValue={person?.lifecycle} fieldKey="lifecycle" />
+          <Combobox name="owner" label="Owner" options={options.owner ?? []} defaultValue={person?.owner} fieldKey="owner" />
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">

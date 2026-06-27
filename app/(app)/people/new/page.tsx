@@ -16,7 +16,7 @@ export default async function NewPersonPage() {
 
   return (
     <div>
-      <PageHeader title="New person" subtitle="Nothing is required; capture what you know now and fill the rest later." />
+      <PageHeader back title="New person" subtitle="Nothing is required; capture what you know now and fill the rest later." />
       <PersonForm action={createPerson} options={options} orgs={orgOptions} />
     </div>
   );

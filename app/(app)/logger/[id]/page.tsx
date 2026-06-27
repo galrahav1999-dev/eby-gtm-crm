@@ -55,7 +55,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   if (ing.status === "error") {
     return (
       <div>
-        <PageHeader title="AI logger" subtitle="Something went wrong on this run." />
+        <PageHeader back title="AI logger" subtitle="Something went wrong on this run." />
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{ing.error}</div>
         <Link href="/logger" className="btn-ghost mt-4">Back to logger</Link>
       </div>
@@ -72,7 +72,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
     ] as const;
     return (
       <div>
-        <PageHeader title="Saved" subtitle="These records were created from this run." />
+        <PageHeader back title="Saved" subtitle="These records were created from this run." />
         <div className="card p-5">
           <div className="flex flex-wrap gap-4">
             {counts.map(([k, n]) => (
@@ -102,7 +102,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
   return (
     <div>
-      <PageHeader title="Review draft records" subtitle="Untick anything you don't want. Nothing is saved until you click Save.">
+      <PageHeader back title="Review draft records" subtitle="Untick anything you don't want. Nothing is saved until you click Save.">
         <DeleteButton action={discardIngestion.bind(null, ing.id)} label="Discard" confirmText="Discard this run?" />
       </PageHeader>
 

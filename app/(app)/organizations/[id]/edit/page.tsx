@@ -18,7 +18,7 @@ export default async function EditOrganizationPage({ params }: { params: { id: s
 
   return (
     <div>
-      <PageHeader title={`Edit ${org.name}`} />
+      <PageHeader back title={`Edit ${org.name}`} />
       <OrgForm action={updateOrganization.bind(null, org.id)} options={options} org={org} />
     </div>
   );

@@ -33,7 +33,7 @@ export default async function OrganizationDetail({ params }: { params: { id: str
 
   return (
     <div>
-      <PageHeader title={org.name} subtitle={undefined}>
+      <PageHeader back title={org.name} subtitle={undefined}>
         <Link href={`/organizations/${org.id}/edit`} className="btn-ghost">
           Edit
         </Link>

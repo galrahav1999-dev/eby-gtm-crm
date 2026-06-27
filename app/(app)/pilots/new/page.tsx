@@ -10,7 +10,7 @@ export default async function NewPilotPage() {
   const [options, orgs, people] = await Promise.all([getAllOptions(), getOrgOptions(), getPeopleOptions()]);
   return (
     <div>
-      <PageHeader title="New pilot" />
+      <PageHeader back title="New pilot" />
       <PilotForm action={createPilot} options={options} orgs={orgs} people={people} />
     </div>
   );

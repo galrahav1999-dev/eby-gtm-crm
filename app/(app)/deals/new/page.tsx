@@ -14,7 +14,7 @@ export default async function NewDealPage() {
   ]);
   return (
     <div>
-      <PageHeader title="New deal" subtitle="Only the deal name is required." />
+      <PageHeader back title="New deal" subtitle="Only the deal name is required." />
       <DealForm action={createDeal} options={options} orgs={orgs} people={people} />
     </div>
   );

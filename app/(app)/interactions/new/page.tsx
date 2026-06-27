@@ -19,7 +19,7 @@ export default async function NewInteractionPage({
   ]);
   return (
     <div>
-      <PageHeader title="Log interaction" subtitle="Capture the call while it's fresh. Quote them verbatim." />
+      <PageHeader back title="Log interaction" subtitle="Capture the call while it's fresh. Quote them verbatim." />
       <InteractionForm
         action={createInteraction}
         options={options}

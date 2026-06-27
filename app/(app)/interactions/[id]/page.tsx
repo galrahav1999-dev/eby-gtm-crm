@@ -19,7 +19,7 @@ export default async function InteractionDetail({ params }: { params: { id: stri
 
   return (
     <div>
-      <PageHeader title={`${it.type ?? "Interaction"}`} subtitle={fmtDate(it.date)} />
+      <PageHeader back title={`${it.type ?? "Interaction"}`} subtitle={fmtDate(it.date)} />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <IdTag id={it.display_id} />

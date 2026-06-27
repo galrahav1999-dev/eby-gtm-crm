@@ -9,7 +9,7 @@ export default async function NewOrganizationPage() {
   const options = await getAllOptions();
   return (
     <div>
-      <PageHeader title="New organization" subtitle="Only the name is required; fill in the rest as you learn it." />
+      <PageHeader back title="New organization" subtitle="Only the name is required; fill in the rest as you learn it." />
       <OrgForm action={createOrganization} options={options} />
     </div>
   );

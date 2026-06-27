@@ -3,7 +3,9 @@
 import Link from "next/link";
 import type { OptionsMap } from "@/lib/options";
 import type { Organization } from "@/lib/db-types";
-import { TextField, TextArea, SelectField, SubmitButton } from "./form";
+import { COUNTRIES_FULL } from "@/lib/countries";
+import { TextField, TextArea, SubmitButton } from "./form";
+import { Combobox } from "./Combobox";
 
 export function OrgForm({
   action,
@@ -20,16 +22,16 @@ export function OrgForm({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <TextField name="name" label="Organization name" defaultValue={org?.name} required />
           <TextField name="domain" label="Website / domain" defaultValue={org?.domain} placeholder="example.org" />
-          <SelectField name="org_type" label="Org type" options={options.org_type ?? []} defaultValue={org?.org_type} />
-          <SelectField name="age_band" label="Age / grade band" options={options.age_band ?? []} defaultValue={org?.age_band} />
-          <SelectField name="denomination" label="Denomination" options={options.denomination ?? []} defaultValue={org?.denomination} />
-          <SelectField name="segment" label="Segment" options={options.segment ?? []} defaultValue={org?.segment} />
+          <Combobox name="org_type" label="Org type" options={options.org_type ?? []} defaultValue={org?.org_type} fieldKey="org_type" />
+          <Combobox name="age_band" label="Age / grade band" options={options.age_band ?? []} defaultValue={org?.age_band} fieldKey="age_band" />
+          <Combobox name="denomination" label="Denomination" options={options.denomination ?? []} defaultValue={org?.denomination} fieldKey="denomination" />
+          <Combobox name="segment" label="Segment" options={options.segment ?? []} defaultValue={org?.segment} fieldKey="segment" />
           <TextField name="city" label="City" defaultValue={org?.city} />
-          <SelectField name="country" label="Country" options={options.country ?? []} defaultValue={org?.country} />
+          <Combobox name="country" label="Country" options={COUNTRIES_FULL} defaultValue={org?.country} placeholder="Search countries…" />
           <TextField name="size" label="Size (students / seats)" defaultValue={org?.size} />
           <TextField name="affiliation" label="Affiliation / network" defaultValue={org?.affiliation} />
-          <SelectField name="owner" label="Owner" options={options.owner ?? []} defaultValue={org?.owner} />
-          <SelectField name="status" label="Status" options={options.org_status ?? []} defaultValue={org?.status} />
+          <Combobox name="owner" label="Owner" options={options.owner ?? []} defaultValue={org?.owner} fieldKey="owner" />
+          <Combobox name="status" label="Status" options={options.org_status ?? []} defaultValue={org?.status} fieldKey="org_status" />
         </div>
         <div className="mt-4">
           <TextArea name="notes" label="Notes" defaultValue={org?.notes} rows={4} />

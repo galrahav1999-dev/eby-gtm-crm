@@ -19,7 +19,7 @@ export default async function EditPartnerPage({ params }: { params: { id: string
   if (!partner) notFound();
   return (
     <div>
-      <PageHeader title={`Edit ${partner.partner_org}`} />
+      <PageHeader back title={`Edit ${partner.partner_org}`} />
       <PartnerForm action={updatePartner.bind(null, partner.id)} options={options} people={people} partner={partner} />
     </div>
   );

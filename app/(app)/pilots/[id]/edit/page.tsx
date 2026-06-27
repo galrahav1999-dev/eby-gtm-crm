@@ -20,7 +20,7 @@ export default async function EditPilotPage({ params }: { params: { id: string }
   if (!pilot) notFound();
   return (
     <div>
-      <PageHeader title="Edit pilot" />
+      <PageHeader back title="Edit pilot" />
       <PilotForm action={updatePilot.bind(null, pilot.id)} options={options} orgs={orgs} people={people} pilot={pilot} />
     </div>
   );

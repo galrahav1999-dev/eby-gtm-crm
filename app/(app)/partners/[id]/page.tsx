@@ -19,7 +19,7 @@ export default async function PartnerDetail({ params }: { params: { id: string }
 
   return (
     <div>
-      <PageHeader title={p.partner_org}>
+      <PageHeader back title={p.partner_org}>
         <Link href={`/partners/${p.id}/edit`} className="btn-ghost">Edit</Link>
         <DeleteButton action={deletePartner.bind(null, p.id)} confirmText="Delete this partner?" />
       </PageHeader>

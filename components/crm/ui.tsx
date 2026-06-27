@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { labelColor, ownerColor } from "@/lib/colors";
+import { BackButton } from "./BackButton";
 
 /** A colored pill for any enum value (segment, stage, status, etc.). */
 export function Badge({
@@ -56,18 +57,23 @@ export function PageHeader({
   title,
   subtitle,
   children,
+  back,
 }: {
   title: string;
   subtitle?: string;
   children?: React.ReactNode;
+  back?: boolean;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="text-xl font-semibold text-white">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-sm text-slate-400">{subtitle}</p>}
+    <div className="mb-6">
+      {back && <BackButton />}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-white">{title}</h1>
+          {subtitle && <p className="mt-0.5 text-sm text-slate-400">{subtitle}</p>}
+        </div>
+        {children && <div className="flex items-center gap-2">{children}</div>}
       </div>
-      {children && <div className="flex items-center gap-2">{children}</div>}
     </div>
   );
 }

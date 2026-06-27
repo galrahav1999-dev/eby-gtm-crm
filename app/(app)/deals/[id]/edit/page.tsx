@@ -21,7 +21,7 @@ export default async function EditDealPage({ params }: { params: { id: string } 
 
   return (
     <div>
-      <PageHeader title={`Edit ${deal.name}`} />
+      <PageHeader back title={`Edit ${deal.name}`} />
       <DealForm action={updateDeal.bind(null, deal.id)} options={options} orgs={orgs} people={people} deal={deal} />
     </div>
   );

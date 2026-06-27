@@ -20,7 +20,7 @@ export default async function EditPersonPage({ params }: { params: { id: string 
 
   return (
     <div>
-      <PageHeader title={`Edit ${[person.first_name, person.last_name].filter(Boolean).join(" ") || "person"}`} />
+      <PageHeader back title={`Edit ${[person.first_name, person.last_name].filter(Boolean).join(" ") || "person"}`} />
       <PersonForm action={updatePerson.bind(null, person.id)} options={options} orgs={orgOptions} person={person} />
     </div>
   );

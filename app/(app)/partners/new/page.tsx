@@ -10,7 +10,7 @@ export default async function NewPartnerPage() {
   const [options, people] = await Promise.all([getAllOptions(), getPeopleOptions()]);
   return (
     <div>
-      <PageHeader title="New partner" subtitle="Only the partner organization is required." />
+      <PageHeader back title="New partner" subtitle="Only the partner organization is required." />
       <PartnerForm action={createPartner} options={options} people={people} />
     </div>
   );

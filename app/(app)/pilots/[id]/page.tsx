@@ -19,7 +19,7 @@ export default async function PilotDetail({ params }: { params: { id: string } }
 
   return (
     <div>
-      <PageHeader title={p.organizations?.name ? `Pilot · ${p.organizations.name}` : "Pilot"}>
+      <PageHeader back title={p.organizations?.name ? `Pilot · ${p.organizations.name}` : "Pilot"}>
         <Link href={`/pilots/${p.id}/edit`} className="btn-ghost">Edit</Link>
         <DeleteButton action={deletePilot.bind(null, p.id)} confirmText="Delete this pilot?" />
       </PageHeader>

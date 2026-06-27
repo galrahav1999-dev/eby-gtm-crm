@@ -18,7 +18,7 @@ export default async function EditCohortPage({ params }: { params: { id: string 
   if (!cohort) notFound();
   return (
     <div>
-      <PageHeader title={`Edit ${cohort.cohort_label}`}>
+      <PageHeader back title={`Edit ${cohort.cohort_label}`}>
         <DeleteButton action={deleteCohort.bind(null, cohort.id)} confirmText="Delete this cohort?" />
       </PageHeader>
       <CohortForm action={updateCohort.bind(null, cohort.id)} options={options} cohort={cohort} />

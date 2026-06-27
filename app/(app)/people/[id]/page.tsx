@@ -26,7 +26,7 @@ export default async function PersonDetail({ params }: { params: { id: string } 
 
   return (
     <div>
-      <PageHeader title={personName(person)}>
+      <PageHeader back title={personName(person)}>
         <Link href={`/people/${person.id}/edit`} className="btn-ghost">
           Edit
         </Link>

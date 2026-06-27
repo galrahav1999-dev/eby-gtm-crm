@@ -35,7 +35,7 @@ export default async function DealDetail({ params }: { params: { id: string } })
 
   return (
     <div>
-      <PageHeader title={deal.name}>
+      <PageHeader back title={deal.name}>
         <Link href={`/deals/${deal.id}/edit`} className="btn-ghost">Edit</Link>
         <DeleteButton action={deleteDeal.bind(null, deal.id)} confirmText="Delete this deal?" />
       </PageHeader>
