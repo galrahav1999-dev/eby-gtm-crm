@@ -1,0 +1,31 @@
+import type { ObjectDef } from "./types";
+
+export const peopleDef: ObjectDef = {
+  key: "people",
+  table: "people",
+  label: "People",
+  singular: "Person",
+  idPrefix: "PER",
+  title: (r) => [r.first_name, r.last_name].filter(Boolean).join(" ").trim() || r.email || "(no name)",
+  blurb: "Every contact: teachers, principals, parents, learners, partners.",
+  searchFields: ["first_name", "last_name", "email", "role_title", "city", "country", "segment"],
+  listColumns: ["role_title", "org_id", "segment", "owner", "lifecycle", "next_step_date"],
+  quickCreate: ["first_name", "last_name", "email", "role_title", "org_id"],
+  linked: [{ object: "interactions", fk: "person_id", label: "Interactions" }],
+  fields: [
+    { name: "first_name", label: "First name", widget: "text", showInList: true, section: "Identity" },
+    { name: "last_name", label: "Last name", widget: "text", section: "Identity" },
+    { name: "email", label: "Email", widget: "email", placeholder: "name@example.com", section: "Identity", help: "Used to recognize duplicate people." },
+    { name: "role_title", label: "Role / title", widget: "combobox", optionsKey: "person_role", addNew: true, showInList: true, section: "Identity", help: "Their role. Add a new one if none fits." },
+    { name: "org_id", label: "Organization", widget: "fk", fkTo: "organizations", inlineCreate: true, showInList: true, section: "Identity", help: "Link to a school/org, or leave blank for an individual. You can create a new org right here." },
+    { name: "segment", label: "Segment", widget: "combobox", optionsKey: "segment", addNew: true, showInList: true, section: "Profile", help: "Which go-to-market segment this person fits." },
+    { name: "city", label: "City", widget: "text", section: "Location" },
+    { name: "country", label: "Country", widget: "country", section: "Location" },
+    { name: "source", label: "Source", widget: "combobox", optionsKey: "source", addNew: true, section: "Profile", help: "How we found them." },
+    { name: "lifecycle", label: "Lifecycle", widget: "combobox", optionsKey: "lifecycle", addNew: true, showInList: true, section: "Profile", help: "Where they are in our process." },
+    { name: "owner", label: "Owner", widget: "combobox", optionsKey: "owner", addNew: true, section: "Tracking", help: "Which EBY teammate owns this contact." },
+    { name: "next_step", label: "Next step", widget: "text", placeholder: "e.g. Send pilot one-pager", section: "Tracking" },
+    { name: "next_step_date", label: "Next-step date", widget: "date", showInList: true, section: "Tracking", help: "Shows red on the dashboard when it is due or overdue." },
+    { name: "notes", label: "Notes", widget: "textarea", section: "Notes" },
+  ],
+};

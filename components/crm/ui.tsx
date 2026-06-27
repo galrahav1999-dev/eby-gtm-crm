@@ -46,6 +46,21 @@ export function OwnerAvatar({ owner, size = 24 }: { owner: string | null; size?:
   );
 }
 
+/** Hover help: a small "?" that reveals an explanation on hover. */
+export function HelpTip({ text }: { text?: string | null }) {
+  if (!text) return null;
+  return (
+    <span className="group relative inline-flex align-middle">
+      <span className="ml-1 inline-flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-500/70 text-[9px] leading-none text-slate-400">
+        ?
+      </span>
+      <span className="pointer-events-none absolute left-1/2 top-5 z-50 hidden w-52 -translate-x-1/2 rounded-md border border-white/10 bg-ink-850 px-2.5 py-1.5 text-xs font-normal leading-snug text-slate-200 shadow-card group-hover:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
 /** The 7-digit human ID, styled as a quiet monospace tag. */
 export function IdTag({ id }: { id: string | null | undefined }) {
   if (!id) return null;

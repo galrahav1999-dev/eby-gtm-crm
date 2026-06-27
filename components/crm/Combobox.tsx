@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { HelpTip } from "./ui";
 
 const fieldBase =
   "w-full rounded-lg border border-white/10 bg-ink-800/80 px-3 py-2 text-sm text-slate-100 " +
@@ -19,6 +20,7 @@ export function Combobox({
   required,
   placeholder = "Search…",
   hint,
+  help,
   fieldKey,
 }: {
   name: string;
@@ -28,6 +30,7 @@ export function Combobox({
   required?: boolean;
   placeholder?: string;
   hint?: string;
+  help?: string | null;
   fieldKey?: string;
 }) {
   const [opts, setOpts] = useState<string[]>(
@@ -74,6 +77,7 @@ export function Combobox({
       <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-slate-300">
         {label}
         {required && <span className="text-rose-400">*</span>}
+        <HelpTip text={help} />
       </span>
       <div className="relative">
         <input type="hidden" name={name} value={value} />

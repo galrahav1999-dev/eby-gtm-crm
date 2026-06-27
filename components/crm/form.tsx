@@ -1,21 +1,24 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { HelpTip } from "./ui";
 
 const fieldBase =
   "w-full rounded-lg border border-white/10 bg-ink-800/80 px-3 py-2 text-sm text-slate-100 " +
   "placeholder:text-slate-600 outline-none transition focus:border-accent/70 focus:bg-ink-800 " +
   "focus:ring-2 focus:ring-accent/20";
 
-function Wrap({
+export function Wrap({
   label,
   required,
   hint,
+  help,
   children,
 }: {
   label: string;
   required?: boolean;
   hint?: string;
+  help?: string | null;
   children: React.ReactNode;
 }) {
   return (
@@ -23,6 +26,7 @@ function Wrap({
       <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-slate-300">
         {label}
         {required && <span className="text-rose-400">*</span>}
+        <HelpTip text={help} />
       </span>
       {children}
       {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
@@ -37,6 +41,8 @@ export function TextField({
   required,
   placeholder,
   hint,
+  help,
+  type = "text",
 }: {
   name: string;
   label: string;
@@ -44,16 +50,12 @@ export function TextField({
   required?: boolean;
   placeholder?: string;
   hint?: string;
+  help?: string | null;
+  type?: string;
 }) {
   return (
-    <Wrap label={label} required={required} hint={hint}>
-      <input
-        name={name}
-        defaultValue={defaultValue ?? ""}
-        required={required}
-        placeholder={placeholder}
-        className={fieldBase}
-      />
+    <Wrap label={label} required={required} hint={hint} help={help}>
+      <input type={type} name={name} defaultValue={defaultValue ?? ""} required={required} placeholder={placeholder} className={fieldBase} />
     </Wrap>
   );
 }
@@ -64,22 +66,18 @@ export function NumberField({
   defaultValue,
   placeholder,
   hint,
+  help,
 }: {
   name: string;
   label: string;
   defaultValue?: number | string | null;
   placeholder?: string;
   hint?: string;
+  help?: string | null;
 }) {
   return (
-    <Wrap label={label} hint={hint}>
-      <input
-        name={name}
-        defaultValue={defaultValue ?? ""}
-        inputMode="decimal"
-        placeholder={placeholder}
-        className={fieldBase}
-      />
+    <Wrap label={label} hint={hint} help={help}>
+      <input name={name} defaultValue={defaultValue ?? ""} inputMode="decimal" placeholder={placeholder} className={fieldBase} />
     </Wrap>
   );
 }
@@ -89,14 +87,16 @@ export function DateField({
   label,
   defaultValue,
   hint,
+  help,
 }: {
   name: string;
   label: string;
   defaultValue?: string | null;
   hint?: string;
+  help?: string | null;
 }) {
   return (
-    <Wrap label={label} hint={hint}>
+    <Wrap label={label} hint={hint} help={help}>
       <input type="date" name={name} defaultValue={defaultValue ?? ""} className={fieldBase} />
     </Wrap>
   );
@@ -109,6 +109,7 @@ export function TextArea({
   rows = 3,
   placeholder,
   hint,
+  help,
 }: {
   name: string;
   label: string;
@@ -116,16 +117,11 @@ export function TextArea({
   rows?: number;
   placeholder?: string;
   hint?: string;
+  help?: string | null;
 }) {
   return (
-    <Wrap label={label} hint={hint}>
-      <textarea
-        name={name}
-        defaultValue={defaultValue ?? ""}
-        rows={rows}
-        placeholder={placeholder}
-        className={`${fieldBase} resize-y`}
-      />
+    <Wrap label={label} hint={hint} help={help}>
+      <textarea name={name} defaultValue={defaultValue ?? ""} rows={rows} placeholder={placeholder} className={`${fieldBase} resize-y`} />
     </Wrap>
   );
 }
@@ -138,6 +134,7 @@ export function SelectField({
   required,
   placeholder = "—",
   hint,
+  help,
 }: {
   name: string;
   label: string;
@@ -146,18 +143,12 @@ export function SelectField({
   required?: boolean;
   placeholder?: string;
   hint?: string;
+  help?: string | null;
 }) {
-  // Keep an unknown existing value selectable so legacy data never disappears.
-  const opts =
-    defaultValue && !options.includes(defaultValue) ? [defaultValue, ...options] : options;
+  const opts = defaultValue && !options.includes(defaultValue) ? [defaultValue, ...options] : options;
   return (
-    <Wrap label={label} required={required} hint={hint}>
-      <select
-        name={name}
-        defaultValue={defaultValue ?? ""}
-        required={required}
-        className={`${fieldBase} appearance-none`}
-      >
+    <Wrap label={label} required={required} hint={hint} help={help}>
+      <select name={name} defaultValue={defaultValue ?? ""} required={required} className={`${fieldBase} appearance-none`}>
         <option value="">{placeholder}</option>
         {opts.map((o) => (
           <option key={o} value={o}>
@@ -169,7 +160,6 @@ export function SelectField({
   );
 }
 
-/** A foreign-key picker: choose a related record by label, submit its id. */
 export function RecordSelect({
   name,
   label,
@@ -177,6 +167,7 @@ export function RecordSelect({
   defaultValue,
   required,
   hint,
+  help,
 }: {
   name: string;
   label: string;
@@ -184,15 +175,11 @@ export function RecordSelect({
   defaultValue?: string | null;
   required?: boolean;
   hint?: string;
+  help?: string | null;
 }) {
   return (
-    <Wrap label={label} required={required} hint={hint}>
-      <select
-        name={name}
-        defaultValue={defaultValue ?? ""}
-        required={required}
-        className={`${fieldBase} appearance-none`}
-      >
+    <Wrap label={label} required={required} hint={hint} help={help}>
+      <select name={name} defaultValue={defaultValue ?? ""} required={required} className={`${fieldBase} appearance-none`}>
         <option value="">—</option>
         {records.map((r) => (
           <option key={r.id} value={r.id}>
@@ -216,8 +203,6 @@ export function SubmitButton({ label = "Save" }: { label?: string }) {
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null;
   return (
-    <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
-      {message}
-    </div>
+    <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{message}</div>
   );
 }
