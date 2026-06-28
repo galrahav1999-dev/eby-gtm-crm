@@ -47,13 +47,13 @@ export default async function Dashboard() {
           <Link
             key={s.label}
             href={s.href}
-            className="card group p-4 transition hover:ring-1 hover:ring-accent/30"
+            className="card group p-4 transition hover:ring-1 hover:ring-primary"
           >
             <div className="label-eyebrow">{s.label}</div>
-            <div className={`mt-2 text-3xl font-semibold ${s.warn ? "text-rose-300" : "text-white"}`}>
+            <div className={`mt-2 text-3xl font-semibold ${s.warn ? "text-rose-300" : "text-ink"}`}>
               {s.value}
             </div>
-            <div className="mt-1 text-xs text-slate-500">{s.sub}</div>
+            <div className="mt-1 text-xs text-ink-muted">{s.sub}</div>
           </Link>
         ))}
       </div>
@@ -61,14 +61,14 @@ export default async function Dashboard() {
       <div className="card p-5">
         <div className="label-eyebrow mb-2">Sprint goal</div>
         <div className="mb-2 flex items-end justify-between">
-          <span className="text-sm text-slate-300">Discovery interviews logged</span>
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm text-ink-soft">Discovery interviews logged</span>
+          <span className="text-sm font-medium text-ink">
             {interviews} / {interviewGoal}
           </span>
         </div>
-        <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/5">
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-muted">
           <div
-            className="h-full rounded-full bg-accent transition-all"
+            className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${Math.min(100, (interviews / interviewGoal) * 100)}%` }}
           />
         </div>

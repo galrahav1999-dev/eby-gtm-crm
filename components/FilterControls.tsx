@@ -46,19 +46,19 @@ export default function FilterControls() {
       <button
         onClick={toggleOverlapsOnly}
         className={`chip transition-all ${
-          overlapsOnly ? "bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/40" : "text-slate-400 hover:bg-white/5 ring-1 ring-white/5"
+          overlapsOnly ? "bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/40" : "text-ink-muted hover:bg-surface-muted ring-1 ring-line"
         }`}
       >
         <WarnIcon className="h-3.5 w-3.5" />
         Overlaps
       </button>
 
-      <span className="px-1 text-[11px] text-slate-500">
-        <span className="font-semibold text-white tabular-nums">{visible.length}</span> shown
+      <span className="px-1 text-[11px] text-ink-muted">
+        <span className="font-semibold text-ink tabular-nums">{visible.length}</span> shown
       </span>
 
       {active && (
-        <button onClick={resetFilters} className="chip text-slate-400 hover:bg-white/5 ring-1 ring-white/5">
+        <button onClick={resetFilters} className="chip text-ink-muted hover:bg-surface-muted ring-1 ring-line">
           Clear
         </button>
       )}
@@ -83,18 +83,18 @@ function Select({
   return (
     <label
       className={`relative flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs ring-1 transition-colors ${
-        isOn ? "bg-accent/15 text-white ring-accent/40" : "bg-ink-800/80 text-slate-300 ring-white/5"
+        isOn ? "bg-primary-soft text-ink ring-primary" : "bg-card text-ink-soft ring-line"
       }`}
     >
       {isOn && dot && dot(value) ? (
         <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: dot(value) }} />
       ) : (
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-muted">{label}</span>
       )}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="cursor-pointer appearance-none bg-transparent pr-3 text-xs font-medium text-current outline-none [&>option]:bg-ink-850 [&>option]:text-slate-200"
+        className="cursor-pointer appearance-none bg-transparent pr-3 text-xs font-medium text-current outline-none [&>option]:bg-card [&>option]:text-ink-soft"
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -102,7 +102,7 @@ function Select({
           </option>
         ))}
       </select>
-      <svg viewBox="0 0 24 24" className="pointer-events-none absolute right-1.5 h-3 w-3 text-slate-500" fill="none">
+      <svg viewBox="0 0 24 24" className="pointer-events-none absolute right-1.5 h-3 w-3 text-ink-muted" fill="none">
         <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </label>

@@ -34,10 +34,10 @@ export default async function PilotDetail({ params }: { params: { id: string } }
       <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
         <div>
           <DetailField label="Organization">
-            {p.organizations ? <Link href={`/organizations/${p.organizations.id}`} className="text-accent-soft hover:underline">{p.organizations.name}</Link> : null}
+            {p.organizations ? <Link href={`/organizations/${p.organizations.id}`} className="text-primary hover:underline">{p.organizations.name}</Link> : null}
           </DetailField>
           <DetailField label="Champion">
-            {p.people ? <Link href={`/people/${p.people.id}`} className="text-accent-soft hover:underline">{personName(p.people)}</Link> : null}
+            {p.people ? <Link href={`/people/${p.people.id}`} className="text-primary hover:underline">{personName(p.people)}</Link> : null}
           </DetailField>
           <DetailField label="Capability">{p.capability}</DetailField>
           <DetailField label="Representativeness">{p.representativeness}</DetailField>

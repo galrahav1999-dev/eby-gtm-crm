@@ -28,24 +28,24 @@ export default function AutomationPanel() {
       />
 
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-ink-900/95 backdrop-blur-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-line bg-surface backdrop-blur-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-start gap-3 border-b border-white/5 p-4">
+        <div className="flex items-start gap-3 border-b border-line-soft p-4">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent to-sky-500 shadow-glow">
-            <SparkIcon className="h-5 w-5 text-white" />
+            <SparkIcon className="h-5 w-5 text-ink" />
           </div>
           <div className="flex-1">
-            <h2 className="text-base font-semibold text-white">Follow-up autopilot</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-base font-semibold text-ink">Follow-up autopilot</h2>
+            <p className="text-xs text-ink-muted">
               AI drafts the outreach. You stay in control.
             </p>
           </div>
           <button
             onClick={() => togglePanel(false)}
-            className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 hover:bg-white/5 hover:text-white"
+            className="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink"
             aria-label="Close panel"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
@@ -58,26 +58,26 @@ export default function AutomationPanel() {
         {focusId ? (
           <button
             onClick={openApprovals}
-            className="flex w-full items-center gap-2 border-b border-white/5 bg-accent/5 px-4 py-3 text-left hover:bg-accent/10"
+            className="flex w-full items-center gap-2 border-b border-line-soft bg-primary-soft px-4 py-3 text-left hover:bg-primary-soft"
           >
-            <svg viewBox="0 0 24 24" className="h-4 w-4 text-accent-soft" fill="none">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-primary" fill="none">
               <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="text-sm font-medium text-slate-200">This account · view all {pending} approvals</span>
+            <span className="text-sm font-medium text-ink-soft">This account · view all {pending} approvals</span>
           </button>
         ) : (
-          <div className="flex items-center gap-2 border-b border-white/5 bg-accent/5 px-4 py-3">
-            <span className="grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-xs font-bold text-white">
+          <div className="flex items-center gap-2 border-b border-line-soft bg-primary-soft px-4 py-3">
+            <span className="grid h-6 min-w-6 place-items-center rounded-full bg-primary px-1.5 text-xs font-bold text-ink">
               {pending}
             </span>
-            <span className="text-sm font-medium text-slate-200">
+            <span className="text-sm font-medium text-ink-soft">
               follow-up{pending === 1 ? "" : "s"} awaiting your approval
             </span>
           </div>
         )}
 
         {/* Principle banner */}
-        <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2.5 text-[11px] text-emerald-300/90">
+        <div className="flex items-center gap-2 border-b border-line-soft px-4 py-2.5 text-[11px] text-emerald-300/90">
           <LockIcon className="h-3.5 w-3.5" />
           Nothing is sent in your name without an explicit click.
         </div>
@@ -92,7 +92,7 @@ export default function AutomationPanel() {
 
           {resolved.length > 0 && (
             <div className="pt-2">
-              <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+              <div className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">
                 Recently actioned
               </div>
               <div className="space-y-2">
@@ -122,7 +122,7 @@ function DraftCard({ draft }: { draft: Draft }) {
 
   return (
     <div
-      className="animate-fade-in rounded-2xl border border-white/5 bg-ink-850/80 p-3 shadow-card"
+      className="animate-fade-in rounded-2xl border border-line-soft bg-card p-3 shadow-card"
       style={{ borderLeft: `3px solid ${accent}` }}
     >
       {/* Account row — click to fly the globe to this account */}
@@ -134,48 +134,48 @@ function DraftCard({ draft }: { draft: Draft }) {
         <RepAvatar rep={company.ownerRep} size={28} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-semibold text-white group-hover:text-accent-soft">
+            <span className="truncate text-sm font-semibold text-ink group-hover:text-primary">
               {company.name}
             </span>
-            <span className="text-[11px] text-slate-500">{fmtMoney(company.dealValue)}</span>
-            <LocateIcon className="h-3.5 w-3.5 text-slate-600 opacity-0 transition-opacity group-hover:opacity-100" />
+            <span className="text-[11px] text-ink-muted">{fmtMoney(company.dealValue)}</span>
+            <LocateIcon className="h-3.5 w-3.5 text-ink-muted opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            <span className={overdue ? "font-medium text-rose-400" : "text-slate-500"}>
+            <span className={overdue ? "font-medium text-rose-400" : "text-ink-muted"}>
               Due {relativeFromToday(company.nextFollowUp)}
             </span>
-            <span className="text-slate-600">·</span>
-            <span className="text-slate-500">{company.ownerRep.split(" ")[0]}</span>
+            <span className="text-ink-muted">·</span>
+            <span className="text-ink-muted">{company.ownerRep.split(" ")[0]}</span>
           </div>
         </div>
         <StageBadge stage={company.stage} />
       </button>
 
       {/* Draft body */}
-      <div className="mt-3 rounded-xl border border-white/5 bg-ink-900/60 p-3">
-        <div className="text-[11px] font-medium text-slate-500">Subject</div>
+      <div className="mt-3 rounded-xl border border-line-soft bg-surface p-3">
+        <div className="text-[11px] font-medium text-ink-muted">Subject</div>
         {mode === "edit" ? (
           <input
             value={draft.subject}
             onChange={(e) => editDraft(draft.companyId, { subject: e.target.value })}
-            className="mt-0.5 w-full rounded-md bg-ink-800 px-2 py-1 text-sm text-white outline-none ring-1 ring-white/10 focus:ring-accent/50"
+            className="mt-0.5 w-full rounded-md bg-card px-2 py-1 text-sm text-ink outline-none ring-1 ring-line focus:ring-primary"
           />
         ) : (
-          <div className="text-sm font-medium text-white">{draft.subject}</div>
+          <div className="text-sm font-medium text-ink">{draft.subject}</div>
         )}
 
         {mode !== "collapsed" && (
           <>
-            <div className="mt-2 text-[11px] font-medium text-slate-500">Body</div>
+            <div className="mt-2 text-[11px] font-medium text-ink-muted">Body</div>
             {mode === "edit" ? (
               <textarea
                 value={draft.body}
                 onChange={(e) => editDraft(draft.companyId, { body: e.target.value })}
                 rows={9}
-                className="mt-0.5 w-full resize-none rounded-md bg-ink-800 px-2 py-1.5 text-[13px] leading-relaxed text-slate-200 outline-none ring-1 ring-white/10 focus:ring-accent/50"
+                className="mt-0.5 w-full resize-none rounded-md bg-card px-2 py-1.5 text-[13px] leading-relaxed text-ink-soft outline-none ring-1 ring-line focus:ring-primary"
               />
             ) : (
-              <pre className="mt-0.5 whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-slate-300">
+              <pre className="mt-0.5 whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-ink-soft">
                 {draft.body}
               </pre>
             )}
@@ -187,19 +187,19 @@ function DraftCard({ draft }: { draft: Draft }) {
       <div className="mt-3 flex items-center gap-1.5">
         <button
           onClick={() => setMode(mode === "preview" ? "collapsed" : "preview")}
-          className="btn-ghost flex-1 ring-1 ring-white/5"
+          className="btn-ghost flex-1 ring-1 ring-line"
         >
           <EyeIcon className="h-4 w-4" />
           {mode === "preview" ? "Hide" : "Preview"}
         </button>
         <button
           onClick={() => setMode(mode === "edit" ? "preview" : "edit")}
-          className={`btn-ghost flex-1 ring-1 ring-white/5 ${mode === "edit" ? "text-accent-soft" : ""}`}
+          className={`btn-ghost flex-1 ring-1 ring-line ${mode === "edit" ? "text-primary" : ""}`}
         >
           <PencilIcon className="h-4 w-4" />
           {mode === "edit" ? "Done" : "Edit"}
         </button>
-        <button onClick={() => vetoDraft(draft.companyId)} className="btn-danger flex-1 ring-1 ring-white/5">
+        <button onClick={() => vetoDraft(draft.companyId)} className="btn-danger flex-1 ring-1 ring-line">
           <BanIcon className="h-4 w-4" />
           Veto
         </button>
@@ -217,19 +217,19 @@ function ResolvedRow({ draft }: { draft: Draft }) {
   const requeue = useCockpit((s) => s.requeueDraft);
   const sent = draft.status === "sent";
   return (
-    <div className="flex items-center gap-2.5 rounded-xl border border-white/5 bg-ink-850/50 px-3 py-2">
+    <div className="flex items-center gap-2.5 rounded-xl border border-line-soft bg-card px-3 py-2">
       <span
         className={`grid h-6 w-6 place-items-center rounded-lg ${
-          sent ? "bg-emerald-500/15 text-emerald-400" : "bg-slate-500/15 text-slate-400"
+          sent ? "bg-emerald-500/15 text-emerald-400" : "bg-slate-500/15 text-ink-muted"
         }`}
       >
         {sent ? <CheckIcon className="h-3.5 w-3.5" /> : <BanIcon className="h-3.5 w-3.5" />}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[13px] font-medium text-slate-300">{company.name}</div>
-        <div className="text-[11px] text-slate-500">{sent ? "Approved & sent" : "Vetoed — won’t send"}</div>
+        <div className="truncate text-[13px] font-medium text-ink-soft">{company.name}</div>
+        <div className="text-[11px] text-ink-muted">{sent ? "Approved & sent" : "Vetoed — won’t send"}</div>
       </div>
-      <button onClick={() => requeue(draft.companyId)} className="text-[11px] text-slate-500 hover:text-slate-300">
+      <button onClick={() => requeue(draft.companyId)} className="text-[11px] text-ink-muted hover:text-ink-soft">
         Undo
       </button>
     </div>
@@ -239,11 +239,11 @@ function ResolvedRow({ draft }: { draft: Draft }) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-ink-800 text-slate-600">
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-card text-ink-muted">
         <SparkIcon className="h-7 w-7" />
       </div>
-      <div className="text-sm font-medium text-slate-300">You’re all caught up</div>
-      <div className="max-w-[15rem] text-xs text-slate-500">
+      <div className="text-sm font-medium text-ink-soft">You’re all caught up</div>
+      <div className="max-w-[15rem] text-xs text-ink-muted">
         New AI drafts appear here the moment an account becomes due for follow-up.
       </div>
     </div>

@@ -91,13 +91,13 @@ export default function ListBoardView() {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-ink-900/60 px-3 py-2.5 sm:px-4">
-        <div className="flex items-center gap-0.5 rounded-xl bg-ink-800/80 p-0.5 ring-1 ring-white/5">
+      <div className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-surface px-3 py-2.5 sm:px-4">
+        <div className="flex items-center gap-0.5 rounded-xl bg-card p-0.5 ring-1 ring-line">
           {(["table", "board"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`btn capitalize ${tab === t ? "bg-ink-700 text-white" : "text-slate-400 hover:text-white"}`}
+              className={`btn capitalize ${tab === t ? "bg-card text-ink" : "text-ink-muted hover:text-ink"}`}
             >
               {t === "table" ? "Table" : "Board"}
             </button>
@@ -105,12 +105,12 @@ export default function ListBoardView() {
         </div>
 
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+          <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search accounts…"
-            className="w-44 rounded-lg bg-ink-800/80 py-1.5 pl-8 pr-3 text-sm text-white outline-none ring-1 ring-white/5 placeholder:text-slate-600 focus:ring-accent/40 sm:w-56"
+            className="w-44 rounded-lg bg-card py-1.5 pl-8 pr-3 text-sm text-ink outline-none ring-1 ring-line placeholder:text-ink-muted focus:ring-primary sm:w-56"
           />
         </div>
 
@@ -119,16 +119,16 @@ export default function ListBoardView() {
         <div className="ml-auto flex items-center gap-2 pr-1">
           {tab === "table" && (
             <>
-              <button onClick={addAccount} className="btn-ghost ring-1 ring-white/5" title="Add a new account row">
+              <button onClick={addAccount} className="btn-ghost ring-1 ring-line" title="Add a new account row">
                 <PlusIcon className="h-4 w-4" /> Row
               </button>
-              <button onClick={addCustomColumn} className="btn-ghost ring-1 ring-white/5" title="Add a custom column">
+              <button onClick={addCustomColumn} className="btn-ghost ring-1 ring-line" title="Add a custom column">
                 <PlusIcon className="h-4 w-4" /> Column
               </button>
             </>
           )}
-          <span className="text-xs text-slate-500">
-            <span className="font-semibold text-accent-glow tabular-nums">{fmtMoney(totalValue)}</span> pipeline
+          <span className="text-xs text-ink-muted">
+            <span className="font-semibold text-primary tabular-nums">{fmtMoney(totalValue)}</span> pipeline
           </span>
         </div>
       </div>
@@ -188,24 +188,24 @@ function Table({
 
   return (
     <table className="w-full border-collapse text-sm">
-      <thead className="sticky top-0 z-10 bg-ink-900/95 backdrop-blur">
-        <tr className="border-b border-white/10">
+      <thead className="sticky top-0 z-10 bg-surface backdrop-blur">
+        <tr className="border-b border-line">
           {COLS.map((col) => (
             <th
               key={col.key}
               onClick={() => toggleSort(col.key)}
-              className={`cursor-pointer select-none px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:text-slate-300 ${
+              className={`cursor-pointer select-none px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-ink-muted hover:text-ink-soft ${
                 col.align ?? "text-left"
               }`}
             >
               <span className="inline-flex items-center gap-1">
                 {col.label}
-                {sort.key === col.key && <span className="text-accent-soft">{sort.dir === 1 ? "↑" : "↓"}</span>}
+                {sort.key === col.key && <span className="text-primary">{sort.dir === 1 ? "↑" : "↓"}</span>}
               </span>
             </th>
           ))}
           {customColumns.map((col) => (
-            <th key={col.id} className="group/col select-none px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            <th key={col.id} className="group/col select-none px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
               <span className="inline-flex items-center gap-1.5">
                 {col.label}
                 <button
@@ -228,38 +228,38 @@ function Table({
             <tr
               key={c.id}
               onClick={() => onSelect(c)}
-              className={`group cursor-pointer border-b border-white/5 transition-colors ${
-                selectedId === c.id ? "bg-accent/10" : "hover:bg-white/[0.03]"
+              className={`group cursor-pointer border-b border-line-soft transition-colors ${
+                selectedId === c.id ? "bg-primary-soft" : "hover:bg-surface-muted"
               }`}
             >
               <td className="px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: repColor(c.ownerRep) }} />
-                  <span className="font-medium text-white">{c.name}</span>
+                  <span className="font-medium text-ink">{c.name}</span>
                   {isOverlap(c) && <OverlapBadge compact />}
                 </div>
               </td>
-              <td className="px-4 py-2.5 text-slate-400">
-                {c.city}, <span className="text-slate-500">{c.country}</span>
+              <td className="px-4 py-2.5 text-ink-muted">
+                {c.city}, <span className="text-ink-muted">{c.country}</span>
               </td>
               <td className="px-4 py-2.5">
                 <StageBadge stage={c.stage} />
               </td>
               <td className="px-4 py-2.5">
-                <span className="flex items-center gap-1.5 text-slate-300">
+                <span className="flex items-center gap-1.5 text-ink-soft">
                   <RepAvatar rep={c.ownerRep} size={18} />
                   {c.ownerRep}
                 </span>
               </td>
-              <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-white">{fmtMoney(c.dealValue)}</td>
-              <td className="px-4 py-2.5 text-slate-400">{fmtDate(c.lastActivity)}</td>
+              <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-ink">{fmtMoney(c.dealValue)}</td>
+              <td className="px-4 py-2.5 text-ink-muted">{fmtDate(c.lastActivity)}</td>
               <td className="px-4 py-2.5">
                 {c.nextFollowUp ? (
-                  <span className={overdue ? "font-medium text-rose-400" : "text-slate-400"}>
+                  <span className={overdue ? "font-medium text-rose-400" : "text-ink-muted"}>
                     {relativeFromToday(c.nextFollowUp)}
                   </span>
                 ) : (
-                  <span className="text-slate-600">—</span>
+                  <span className="text-ink-muted">—</span>
                 )}
               </td>
               {customColumns.map((col) => (
@@ -268,7 +268,7 @@ function Table({
                     value={cellValues[col.id]?.[c.id] ?? ""}
                     onChange={(e) => setCell(col.id, c.id, e.target.value)}
                     placeholder="—"
-                    className="w-full min-w-[90px] rounded-md bg-transparent px-2 py-1 text-sm text-slate-200 outline-none ring-1 ring-transparent hover:ring-white/10 focus:bg-ink-800 focus:ring-accent/40 placeholder:text-slate-600"
+                    className="w-full min-w-[90px] rounded-md bg-transparent px-2 py-1 text-sm text-ink-soft outline-none ring-1 ring-transparent hover:ring-line focus:bg-card focus:ring-primary placeholder:text-ink-muted"
                   />
                 </td>
               ))}
@@ -278,7 +278,7 @@ function Table({
                     e.stopPropagation();
                     deleteRow(c.id);
                   }}
-                  className="opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-400 text-slate-600"
+                  className="opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-400 text-ink-muted"
                   title="Delete row"
                 >
                   <TrashIcon className="h-4 w-4" />
@@ -326,10 +326,10 @@ function Board({
             <div className="mb-2 flex items-center justify-between px-1">
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }} />
-                <span className="text-sm font-semibold text-white">{stage}</span>
-                <span className="text-xs text-slate-500">{items.length}</span>
+                <span className="text-sm font-semibold text-ink">{stage}</span>
+                <span className="text-xs text-ink-muted">{items.length}</span>
               </div>
-              <span className="text-[11px] font-medium tabular-nums text-slate-500">
+              <span className="text-[11px] font-medium tabular-nums text-ink-muted">
                 {fmtMoney(total)}
               </span>
             </div>
@@ -344,13 +344,13 @@ function Board({
               }}
               onDrop={() => onDrop(stage)}
               className={`flex-1 space-y-2 rounded-2xl border p-2 transition-colors ${
-                isOver ? "border-accent/50 bg-accent/5" : "border-white/5 bg-ink-900/40"
+                isOver ? "border-primary bg-primary-soft" : "border-line-soft bg-surface"
               }`}
               style={{ boxShadow: `inset 0 2px 0 -1px ${color}55` }}
             >
               {items.length === 0 && (
                 <div
-                  className={`py-8 text-center text-xs ${isOver ? "text-accent-soft" : "text-slate-600"}`}
+                  className={`py-8 text-center text-xs ${isOver ? "text-primary" : "text-ink-muted"}`}
                 >
                   {isOver ? "Drop here" : "No deals"}
                 </div>
@@ -371,34 +371,34 @@ function Board({
                       setOverStage(null);
                     }}
                     onClick={() => onSelect(c)}
-                    className={`cursor-grab rounded-xl border bg-ink-850/80 p-2.5 text-left transition-all active:cursor-grabbing ${
+                    className={`cursor-grab rounded-xl border bg-card p-2.5 text-left transition-all active:cursor-grabbing ${
                       selectedId === c.id
-                        ? "border-accent/50 ring-1 ring-accent/30"
-                        : "border-white/5 hover:border-white/15 hover:bg-ink-800"
+                        ? "border-primary ring-1 ring-primary"
+                        : "border-line-soft hover:border-line hover:bg-card"
                     } ${dragId === c.id ? "opacity-40" : ""}`}
                     style={{ borderLeft: `3px solid ${rc}` }}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-sm font-medium leading-tight text-white">{c.name}</span>
+                      <span className="text-sm font-medium leading-tight text-ink">{c.name}</span>
                       {isOverlap(c) && <OverlapBadge compact />}
                     </div>
-                    <div className="mt-1 text-[11px] text-slate-500">
+                    <div className="mt-1 text-[11px] text-ink-muted">
                       {c.city}, {c.country}
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <RepAvatar rep={c.ownerRep} size={18} />
-                        <span className="text-[11px] text-slate-400">{c.ownerRep.split(" ")[0]}</span>
+                        <span className="text-[11px] text-ink-muted">{c.ownerRep.split(" ")[0]}</span>
                       </span>
-                      <span className="text-xs font-semibold tabular-nums text-white">
+                      <span className="text-xs font-semibold tabular-nums text-ink">
                         {fmtMoney(c.dealValue)}
                       </span>
                     </div>
-                    <div className="mt-2 flex items-center justify-between border-t border-white/5 pt-1.5 text-[10px]">
-                      <span className="text-slate-500">Last: {fmtDate(c.lastActivity)}</span>
+                    <div className="mt-2 flex items-center justify-between border-t border-line-soft pt-1.5 text-[10px]">
+                      <span className="text-ink-muted">Last: {fmtDate(c.lastActivity)}</span>
                       {c.nextFollowUp ? (
                         <span
-                          className={`flex items-center gap-1 ${overdue ? "font-medium text-rose-400" : "text-slate-500"}`}
+                          className={`flex items-center gap-1 ${overdue ? "font-medium text-rose-400" : "text-ink-muted"}`}
                         >
                           <span
                             className={`h-1.5 w-1.5 rounded-full ${overdue ? "bg-rose-400" : "bg-slate-600"}`}
@@ -406,7 +406,7 @@ function Board({
                           {relativeFromToday(c.nextFollowUp)}
                         </span>
                       ) : (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-ink-muted">—</span>
                       )}
                     </div>
                   </div>
@@ -446,11 +446,11 @@ function TrashIcon({ className = "" }: { className?: string }) {
 function EmptyRows() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-ink-800 text-slate-600">
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-card text-ink-muted">
         <SearchIcon className="h-7 w-7" />
       </div>
-      <div className="text-sm font-medium text-slate-300">No accounts match these filters</div>
-      <div className="text-xs text-slate-500">Try clearing the rep filter or the overlaps toggle.</div>
+      <div className="text-sm font-medium text-ink-soft">No accounts match these filters</div>
+      <div className="text-xs text-ink-muted">Try clearing the rep filter or the overlaps toggle.</div>
     </div>
   );
 }

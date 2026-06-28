@@ -26,31 +26,31 @@ export default function Header() {
   const pending = pendingCount(drafts);
 
   return (
-    <header className="relative z-30 flex h-14 shrink-0 items-center gap-3 border-b border-white/5 bg-ink-900/80 px-3 backdrop-blur-xl sm:px-4">
+    <header className="relative z-30 flex h-14 shrink-0 items-center gap-3 border-b border-line-soft bg-surface px-3 backdrop-blur-xl sm:px-4">
       {/* Brand */}
       <div className="flex items-center gap-2.5">
         <div className="relative grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-accent to-sky-500 shadow-[0_6px_20px_-6px_rgba(99,102,241,0.8)]">
-          <span className="absolute inset-0 rounded-xl ring-1 ring-white/20" />
+          <span className="absolute inset-0 rounded-xl ring-1 ring-line" />
           <OrbitMark />
         </div>
         <div className="leading-tight">
-          <div className="text-[15px] font-semibold tracking-tight text-white">Cockpit</div>
-          <div className="hidden text-[10px] font-medium uppercase tracking-[0.18em] text-slate-500 sm:block">
+          <div className="text-[15px] font-semibold tracking-tight text-ink">Cockpit</div>
+          <div className="hidden text-[10px] font-medium uppercase tracking-[0.18em] text-ink-muted sm:block">
             Pipeline, in orbit
           </div>
         </div>
       </div>
 
       {/* View toggle */}
-      <div className="ml-1 flex items-center gap-0.5 rounded-xl bg-ink-800/80 p-0.5 ring-1 ring-white/5">
+      <div className="ml-1 flex items-center gap-0.5 rounded-xl bg-card p-0.5 ring-1 ring-line">
         {VIEWS.map((v) => (
           <button
             key={v.id}
             onClick={() => setView(v.id)}
             className={`btn gap-1.5 ${
               view === v.id
-                ? "bg-ink-700 text-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.6)]"
-                : "text-slate-400 hover:text-white"
+                ? "bg-card text-ink shadow-[0_2px_10px_-4px_rgba(0,0,0,0.6)]"
+                : "text-ink-muted hover:text-ink"
             }`}
             aria-pressed={view === v.id}
           >
@@ -63,7 +63,7 @@ export default function Header() {
       {/* KPI strip */}
       <div className="ml-2 hidden items-center gap-4 lg:flex">
         <Kpi label="Open pipeline" value={fmtMoney(openPipeline)} />
-        <span className="h-6 w-px bg-white/5" />
+        <span className="h-6 w-px bg-surface-muted" />
         <Kpi label="Accounts" value={String(companies.length)} />
       </div>
 
@@ -81,12 +81,12 @@ export default function Header() {
       {/* Automation trigger */}
       <button
         onClick={openApprovals}
-        className="btn relative gap-2 bg-ink-800/80 ring-1 ring-white/5 hover:ring-accent/40"
+        className="btn relative gap-2 bg-card ring-1 ring-line hover:ring-primary"
       >
-        <SparkIcon className="h-4 w-4 text-accent-soft" />
-        <span className="hidden text-slate-200 sm:inline">Approvals</span>
+        <SparkIcon className="h-4 w-4 text-primary" />
+        <span className="hidden text-ink-soft sm:inline">Approvals</span>
         {pending > 0 && (
-          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[11px] font-bold text-white">
+          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-ink">
             {pending}
           </span>
         )}
@@ -118,9 +118,9 @@ function MetricsButton() {
     <button
       onClick={() => toggleMetrics(true)}
       title="Team metrics"
-      className="btn gap-2 bg-ink-800/80 text-slate-300 ring-1 ring-white/5 hover:text-white hover:ring-white/10"
+      className="btn gap-2 bg-card text-ink-soft ring-1 ring-line hover:text-ink hover:ring-line"
     >
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-accent-soft" fill="none" aria-hidden>
+      <svg viewBox="0 0 24 24" className="h-4 w-4 text-primary" fill="none" aria-hidden>
         <path d="M4 20V10m6 10V4m6 16v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       </svg>
       <span className="hidden lg:inline">Metrics</span>
@@ -142,8 +142,8 @@ function SoundToggle() {
       onClick={() => toggleSound()}
       title={soundOn ? "Mute ambient sound" : "Ambient sound"}
       aria-pressed={soundOn}
-      className={`btn h-9 w-9 !px-0 ring-1 ring-white/5 ${
-        soundOn ? "bg-accent/15 text-accent-soft" : "bg-ink-800/80 text-slate-400 hover:text-white"
+      className={`btn h-9 w-9 !px-0 ring-1 ring-line ${
+        soundOn ? "bg-primary-soft text-primary" : "bg-card text-ink-muted hover:text-ink"
       }`}
     >
       {soundOn ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
@@ -172,7 +172,7 @@ function Kpi({ label, value }: { label: string; value: string }) {
   return (
     <div className="leading-tight">
       <div className="label-eyebrow">{label}</div>
-      <div className="text-sm font-semibold text-white tabular-nums">{value}</div>
+      <div className="text-sm font-semibold text-ink tabular-nums">{value}</div>
     </div>
   );
 }
@@ -186,15 +186,15 @@ function CrmMenu() {
       <button
         onClick={() => setOpen((o) => !o)}
         onBlur={() => setTimeout(() => setOpen(false), 120)}
-        className="btn gap-2 bg-ink-800/80 ring-1 ring-white/5 hover:ring-white/10"
+        className="btn gap-2 bg-card ring-1 ring-line hover:ring-line"
       >
         <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_2px_rgba(52,211,153,0.6)]" />
-        <span className="hidden text-slate-400 sm:inline">Connected to</span>
-        <span className="font-semibold text-white">{crm}</span>
+        <span className="hidden text-ink-muted sm:inline">Connected to</span>
+        <span className="font-semibold text-ink">{crm}</span>
         <ChevronIcon className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-48 animate-fade-in rounded-xl border border-white/10 bg-ink-850/95 p-1 shadow-card backdrop-blur-xl">
+        <div className="absolute right-0 top-11 z-40 w-48 animate-fade-in rounded-xl border border-line bg-card p-1 shadow-card backdrop-blur-xl">
           {CRMS.map((c) => (
             <button
               key={c}
@@ -202,15 +202,15 @@ function CrmMenu() {
                 setCrm(c);
                 setOpen(false);
               }}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-white/5 ${
-                c === crm ? "text-white" : "text-slate-400"
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-surface-muted ${
+                c === crm ? "text-ink" : "text-ink-muted"
               }`}
             >
               {c}
-              {c === crm && <CheckIcon className="h-4 w-4 text-accent-soft" />}
+              {c === crm && <CheckIcon className="h-4 w-4 text-primary" />}
             </button>
           ))}
-          <div className="px-3 pb-1 pt-2 text-[10px] text-slate-600">
+          <div className="px-3 pb-1 pt-2 text-[10px] text-ink-muted">
             CRM-agnostic · cosmetic in this demo
           </div>
         </div>
@@ -222,7 +222,7 @@ function CrmMenu() {
 /* --- inline icons --- */
 function OrbitMark() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="none" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink" fill="none" aria-hidden>
       <circle cx="12" cy="12" r="4" fill="currentColor" />
       <ellipse cx="12" cy="12" rx="10" ry="4.5" stroke="currentColor" strokeWidth="1.4" opacity="0.7" transform="rotate(28 12 12)" />
     </svg>

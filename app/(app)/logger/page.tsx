@@ -33,13 +33,13 @@ export default async function LoggerPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* Paste text */}
         <form action={parseText} className="card p-5">
-          <h2 className="mb-1 text-sm font-semibold text-white">Paste notes or transcript</h2>
-          <p className="mb-3 text-xs text-slate-500">Rough notes or a full speech-to-text transcript both work.</p>
+          <h2 className="mb-1 text-sm font-semibold text-ink">Paste notes or transcript</h2>
+          <p className="mb-3 text-xs text-ink-muted">Rough notes or a full speech-to-text transcript both work.</p>
           <textarea
             name="transcript"
             rows={10}
             placeholder="Paste the conversation here…"
-            className="w-full rounded-lg border border-white/10 bg-ink-800/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/20"
+            className="w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-ink-muted outline-none focus:border-primary focus:ring-2 focus:ring-primary"
           />
           <div className="mt-3">
             <SubmitButton label="Extract records" />
@@ -48,8 +48,8 @@ export default async function LoggerPage() {
 
         {/* Upload audio */}
         <form action={parseAudio} className="card p-5">
-          <h2 className="mb-1 text-sm font-semibold text-white">Upload a recording</h2>
-          <p className="mb-3 text-xs text-slate-500">
+          <h2 className="mb-1 text-sm font-semibold text-ink">Upload a recording</h2>
+          <p className="mb-3 text-xs text-ink-muted">
             We store the audio, transcribe it, then extract records.
             {!sttOn && " (Needs OPENAI_API_KEY to transcribe.)"}
           </p>
@@ -57,7 +57,7 @@ export default async function LoggerPage() {
             type="file"
             name="audio"
             accept="audio/*"
-            className="block w-full text-sm text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-accent/20 file:px-3 file:py-1.5 file:text-accent-glow"
+            className="block w-full text-sm text-ink-soft file:mr-3 file:rounded-lg file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:text-primary"
           />
           <div className="mt-3">
             <SubmitButton label="Upload & extract" />
@@ -67,21 +67,21 @@ export default async function LoggerPage() {
 
       {/* Recent runs */}
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-white">Recent runs</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">Recent runs</h2>
         {recent && recent.length > 0 ? (
-          <div className="card divide-y divide-white/5">
+          <div className="card divide-y divide-line">
             {recent.map((r) => (
-              <Link key={r.id} href={`/logger/${r.id}`} className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-white/[0.03]">
-                <span className="min-w-0 flex-1 truncate text-sm text-slate-300">
+              <Link key={r.id} href={`/logger/${r.id}`} className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-surface-muted">
+                <span className="min-w-0 flex-1 truncate text-sm text-ink-soft">
                   {r.source_type === "audio" ? "Recording" : "Notes"} ·{" "}
-                  <span className="text-slate-500">{(r.transcript ?? "").slice(0, 80) || "—"}</span>
+                  <span className="text-ink-muted">{(r.transcript ?? "").slice(0, 80) || "—"}</span>
                 </span>
                 <Badge value={r.status} />
               </Link>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">No runs yet.</p>
+          <p className="text-sm text-ink-muted">No runs yet.</p>
         )}
       </section>
     </div>

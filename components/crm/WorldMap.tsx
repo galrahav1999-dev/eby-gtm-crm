@@ -49,7 +49,7 @@ export function WorldMap({ points }: { points: MapPoint[] }) {
         onPointClick={(d: any) => router.push(d.href)}
         pointsMerge={false}
       />
-      <div className="pointer-events-none absolute left-4 top-4 flex gap-3 text-xs text-slate-400">
+      <div className="pointer-events-none absolute left-4 top-4 flex gap-3 text-xs text-ink-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full" style={{ background: "#22d3ee" }} /> Organizations
         </span>

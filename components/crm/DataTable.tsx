@@ -62,14 +62,14 @@ export function DataTable({
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-line-soft px-4 py-3">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={searchPlaceholder}
-          className="w-full max-w-xs rounded-lg border border-white/10 bg-ink-800/80 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/20"
+          className="w-full max-w-xs rounded-lg border border-line bg-card px-3 py-1.5 text-sm text-ink placeholder:text-ink-muted outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
-        <span className="shrink-0 text-xs text-slate-500">
+        <span className="shrink-0 text-xs text-ink-muted">
           {filtered.length} of {rows.length}
         </span>
       </div>
@@ -77,12 +77,12 @@ export function DataTable({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-white/5 text-slate-400">
+            <tr className="border-b border-line-soft text-ink-muted">
               {columns.map((c) => (
                 <th
                   key={c.key}
                   onClick={() => toggleSort(c.key)}
-                  className="cursor-pointer select-none whitespace-nowrap px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:text-slate-200"
+                  className="cursor-pointer select-none whitespace-nowrap px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:text-ink-soft"
                 >
                   {c.header}
                   {sortKey === c.key && <span className="ml-1">{asc ? "↑" : "↓"}</span>}
@@ -95,7 +95,7 @@ export function DataTable({
               <tr
                 key={row.id}
                 onClick={() => router.push(`${basePath}/${row.id}`)}
-                className="cursor-pointer border-b border-white/5 transition hover:bg-white/[0.03]"
+                className="cursor-pointer border-b border-line-soft transition hover:bg-surface-muted"
               >
                 {columns.map((c) => (
                   <td key={c.key} className="whitespace-nowrap px-4 py-3">
@@ -106,7 +106,7 @@ export function DataTable({
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center text-slate-500">
+                <td colSpan={columns.length} className="px-4 py-12 text-center text-ink-muted">
                   Nothing matches “{q}”.
                 </td>
               </tr>
@@ -120,10 +120,10 @@ export function DataTable({
 
 function Cell({ value, kind }: { value: unknown; kind?: ColumnKind }) {
   const s = value == null ? "" : String(value);
-  if (!s && kind !== "text") return <span className="text-slate-600">—</span>;
+  if (!s && kind !== "text") return <span className="text-ink-muted">—</span>;
   switch (kind) {
     case "strong":
-      return <span className="font-medium text-white">{s || "—"}</span>;
+      return <span className="font-medium text-ink">{s || "—"}</span>;
     case "id":
       return <IdTag id={s} />;
     case "badge":
@@ -131,15 +131,15 @@ function Cell({ value, kind }: { value: unknown; kind?: ColumnKind }) {
     case "owner":
       return <Badge value={s} kind="owner" />;
     case "date":
-      return <span className="text-slate-300">{fmtDate(s)}</span>;
+      return <span className="text-ink-soft">{fmtDate(s)}</span>;
     case "nextdate":
       return (
-        <span className={isOverdue(s) ? "font-medium text-rose-300" : "text-slate-300"}>
+        <span className={isOverdue(s) ? "font-medium text-rose-300" : "text-ink-soft"}>
           {fmtDate(s)}
           {isOverdue(s) && <span className="ml-1 text-xs">(due)</span>}
         </span>
       );
     default:
-      return <span className="text-slate-300">{s}</span>;
+      return <span className="text-ink-soft">{s}</span>;
   }
 }

@@ -34,7 +34,7 @@ export default async function ActivityPage() {
         subtitle="Every create, edit, and delete. The team's audit trail for KPIs and troubleshooting."
       />
       {rows && rows.length > 0 ? (
-        <div className="card divide-y divide-white/5">
+        <div className="card divide-y divide-line">
           {rows.map((r) => {
             const who = r.actor_name || r.actor_email || "Someone";
             return (
@@ -42,16 +42,16 @@ export default async function ActivityPage() {
                 <OwnerAvatar owner={who.slice(0, 2)} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-200">{r.summary}</span>
+                    <span className="text-sm text-ink-soft">{r.summary}</span>
                     {r.display_id && (
-                      <span className="font-mono text-[10px] text-slate-600">{r.display_id}</span>
+                      <span className="font-mono text-[10px] text-ink-muted">{r.display_id}</span>
                     )}
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-ink-muted">
                     {who} · {actionColor[r.action] ?? r.action} · {r.table_name}
                   </div>
                 </div>
-                <span className="shrink-0 text-xs text-slate-500">{when(r.created_at)}</span>
+                <span className="shrink-0 text-xs text-ink-muted">{when(r.created_at)}</span>
               </div>
             );
           })}
