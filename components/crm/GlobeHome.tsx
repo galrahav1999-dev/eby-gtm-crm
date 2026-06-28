@@ -38,13 +38,43 @@ function currentPhase(): Phase {
   if (h >= 17 && h < 20) return "dusk";
   return "night";
 }
-// Scenery lives in the globe's own 3D scene (backgroundColor / image), so the
-// space around the planet changes with the time of day.
-const PHASE: Record<Phase, { scene: string; sceneImg: string | null; globe: string; atmo: string; label: string }> = {
-  dawn: { scene: "#f6c8a6", sceneImg: null, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff9e6b", label: "Dawn" },
-  day: { scene: "#bcd9ff", sceneImg: null, globe: "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", atmo: "#dcebff", label: "Day" },
-  dusk: { scene: "#5b3b66", sceneImg: null, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff8f6b", label: "Dusk" },
-  night: { scene: "#05070f", sceneImg: "//unpkg.com/three-globe/example/img/night-sky.png", globe: "//unpkg.com/three-globe/example/img/earth-night.jpg", atmo: "#5b86ff", label: "Night" },
+// Atmospheric scenery layered in the area around the globe; changes with the
+// time of day. The globe's own background is transparent so these show through.
+interface PhaseDef {
+  base: string;
+  accent?: string;
+  glow: string;
+  vignette: string;
+  stars: number; // star opacity 0..1
+  globe: string;
+  atmo: string;
+  label: string;
+}
+const STARS = "//unpkg.com/three-globe/example/img/night-sky.png";
+const PHASE: Record<Phase, PhaseDef> = {
+  dawn: {
+    base: "linear-gradient(180deg,#bcd2ff 0%,#ffd9c2 56%,#ffc2cf 100%)",
+    accent: "radial-gradient(70% 55% at 50% 82%, rgba(255,176,120,.55), transparent 70%)",
+    glow: "rgba(255,160,120,.40)", vignette: "radial-gradient(120% 100% at 50% 50%, transparent 60%, rgba(40,20,30,.18))",
+    stars: 0, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff9e6b", label: "Dawn",
+  },
+  day: {
+    base: "linear-gradient(180deg,#a9caf3 0%,#d8e8ff 46%,#fbf8f1 100%)",
+    accent: "radial-gradient(55% 40% at 82% 6%, rgba(255,240,205,.6), transparent 60%)",
+    glow: "rgba(120,170,255,.30)", vignette: "radial-gradient(120% 100% at 50% 50%, transparent 65%, rgba(20,40,80,.12))",
+    stars: 0, globe: "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", atmo: "#dcebff", label: "Day",
+  },
+  dusk: {
+    base: "linear-gradient(180deg,#15123a 0%,#3a2350 36%,#8a3f55 70%,#e0794a 100%)",
+    accent: "radial-gradient(60% 50% at 50% 100%, rgba(255,150,90,.5), transparent 70%)",
+    glow: "rgba(190,90,140,.38)", vignette: "radial-gradient(120% 100% at 50% 50%, transparent 52%, rgba(0,0,0,.34))",
+    stars: 0.28, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff8f6b", label: "Dusk",
+  },
+  night: {
+    base: "radial-gradient(75% 62% at 50% 42%, #16224d 0%, #0a1230 46%, #05070f 100%)",
+    glow: "rgba(91,134,255,.34)", vignette: "radial-gradient(120% 100% at 50% 50%, transparent 48%, rgba(0,0,0,.5))",
+    stars: 0.6, globe: "//unpkg.com/three-globe/example/img/earth-night.jpg", atmo: "#5b86ff", label: "Night",
+  },
 };
 
 const Pill =
@@ -122,14 +152,22 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const ph = PHASE[phase];
 
   return (
-    <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden" style={{ background: ph.scene }}>
+    <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden">
+      {/* Layered time-of-day scenery around the globe */}
+      <div className="absolute inset-0" style={{ background: ph.base }} />
+      {ph.accent && <div className="absolute inset-0" style={{ background: ph.accent }} />}
+      {ph.stars > 0 && (
+        <div className="absolute inset-0" style={{ backgroundImage: `url(${STARS})`, backgroundSize: "cover", opacity: ph.stars }} />
+      )}
+      <div className="absolute inset-0" style={{ background: `radial-gradient(42% 42% at 50% 47%, ${ph.glow}, transparent 70%)` }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background: ph.vignette }} />
+
       <div className="absolute inset-0">
         <Globe
           ref={globeRef}
           width={size.w}
           height={size.h}
-          backgroundColor={ph.scene}
-          backgroundImageUrl={ph.sceneImg ?? undefined}
+          backgroundColor="rgba(0,0,0,0)"
           globeImageUrl={ph.globe}
           showAtmosphere
           atmosphereColor={ph.atmo}
