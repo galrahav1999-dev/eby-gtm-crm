@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { ownerColor, labelColor } from "@/lib/colors";
+import { OwnerAvatar } from "./ui";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
@@ -37,20 +38,21 @@ function currentPhase(): Phase {
   if (h >= 17 && h < 20) return "dusk";
   return "night";
 }
-const PHASE: Record<Phase, { backdrop: string; globe: string; stars: boolean; atmo: string; label: string }> = {
-  dawn: { backdrop: "radial-gradient(120% 100% at 50% 120%, #ffd9a8 0%, #ffb3c1 35%, #cfe0ff 80%)", globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", stars: false, atmo: "#ffb27a", label: "Dawn" },
-  day: { backdrop: "radial-gradient(120% 100% at 50% 0%, #bcd9ff 0%, #eaf3ff 45%, #fbf8f1 100%)", globe: "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", stars: false, atmo: "#7fb0ff", label: "Day" },
-  dusk: { backdrop: "radial-gradient(120% 100% at 50% 120%, #ff9e7a 0%, #b06ab3 45%, #20204f 90%)", globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", stars: false, atmo: "#ff8f6b", label: "Dusk" },
-  night: { backdrop: "radial-gradient(120% 100% at 50% -10%, #14224a 0%, #0a1230 45%, #05070f 100%)", globe: "//unpkg.com/three-globe/example/img/earth-night.jpg", stars: true, atmo: "#5b86ff", label: "Night" },
+// Scenery lives in the globe's own 3D scene (backgroundColor / image), so the
+// space around the planet changes with the time of day.
+const PHASE: Record<Phase, { scene: string; sceneImg: string | null; globe: string; atmo: string; label: string }> = {
+  dawn: { scene: "#f6c8a6", sceneImg: null, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff9e6b", label: "Dawn" },
+  day: { scene: "#bcd9ff", sceneImg: null, globe: "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", atmo: "#dcebff", label: "Day" },
+  dusk: { scene: "#5b3b66", sceneImg: null, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff8f6b", label: "Dusk" },
+  night: { scene: "#05070f", sceneImg: "//unpkg.com/three-globe/example/img/night-sky.png", globe: "//unpkg.com/three-globe/example/img/earth-night.jpg", atmo: "#5b86ff", label: "Night" },
 };
 
-function Select({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
+const Pill =
+  "rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink-soft outline-none transition hover:text-ink";
+
+function Dropdown({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="rounded-lg border border-line bg-card px-2.5 py-1.5 text-xs text-ink outline-none backdrop-blur focus:border-primary"
-    >
+    <select value={value} onChange={(e) => onChange(e.target.value)} className={`${Pill} appearance-none pr-6`}>
       {children}
     </select>
   );
@@ -59,6 +61,7 @@ function Select({ value, onChange, children }: { value: string; onChange: (v: st
 export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stats }) {
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
+  const globeRef = useRef<any>(null);
   const [size, setSize] = useState({ w: 900, h: 700 });
   const [phase, setPhase] = useState<Phase>("day");
   const [colorBy, setColorBy] = useState<"owner" | "segment" | "kind">("owner");
@@ -66,7 +69,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [fSegment, setFSegment] = useState("all");
   const [fCountry, setFCountry] = useState("all");
   const [fKind, setFKind] = useState<"all" | "org" | "person">("all");
-  const [dashOpen, setDashOpen] = useState(true);
+  const [statsOpen, setStatsOpen] = useState(true);
 
   useEffect(() => setPhase(currentPhase()), []);
   useEffect(() => {
@@ -78,8 +81,21 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
   }, []);
+  // Gentle auto-rotation for a living feel.
+  useEffect(() => {
+    const g = globeRef.current;
+    if (g && g.controls) {
+      g.controls().autoRotate = true;
+      g.controls().autoRotateSpeed = 0.35;
+      g.controls().enableZoom = true;
+    }
+  });
 
-  const owners = useMemo(() => Array.from(new Set(points.map((p) => p.owner).filter(Boolean))) as string[], [points]);
+  const ownerCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of points) if (p.owner) m.set(p.owner, (m.get(p.owner) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [points]);
   const segments = useMemo(() => Array.from(new Set(points.map((p) => p.segment).filter(Boolean))) as string[], [points]);
   const countries = useMemo(() => Array.from(new Set(points.map((p) => p.country).filter(Boolean))) as string[], [points]);
 
@@ -94,130 +110,139 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
       ),
     [points, fOwner, fSegment, fCountry, fKind]
   );
-
   const colored = useMemo(
     () =>
       filtered.map((p) => ({
         ...p,
-        color:
-          colorBy === "owner" ? ownerColor(p.owner) : colorBy === "segment" ? labelColor(p.segment) : p.kind === "org" ? "#22d3ee" : "#f472b6",
+        color: colorBy === "owner" ? ownerColor(p.owner) : colorBy === "segment" ? labelColor(p.segment) : p.kind === "org" ? "#22d3ee" : "#f472b6",
       })),
     [filtered, colorBy]
   );
-
+  const active = fOwner !== "all" || fSegment !== "all" || fCountry !== "all" || fKind !== "all";
   const ph = PHASE[phase];
 
   return (
-    <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden">
-      {/* Time-of-day backdrop */}
-      <div className="absolute inset-0" style={{ background: ph.backdrop }} />
-      {ph.stars && <div className="absolute inset-0 opacity-90" style={{ backgroundImage: "url(//unpkg.com/three-globe/example/img/night-sky.png)", backgroundSize: "cover" }} />}
-
+    <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden" style={{ background: ph.scene }}>
       <div className="absolute inset-0">
         <Globe
+          ref={globeRef}
           width={size.w}
           height={size.h}
-          backgroundColor="rgba(0,0,0,0)"
+          backgroundColor={ph.scene}
+          backgroundImageUrl={ph.sceneImg ?? undefined}
           globeImageUrl={ph.globe}
           showAtmosphere
           atmosphereColor={ph.atmo}
-          atmosphereAltitude={0.2}
+          atmosphereAltitude={0.22}
           pointsData={colored}
           pointLat="lat"
           pointLng="lng"
           pointColor="color"
-          pointAltitude={0.05}
-          pointRadius={0.55}
-          pointLabel={(d: any) => `<div style="font-size:12px;font-weight:600">${d.label}</div>`}
+          pointAltitude={0.06}
+          pointRadius={0.6}
+          pointLabel={(d: any) => `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d.label}</div>`}
           onPointClick={(d: any) => router.push(d.href)}
         />
       </div>
 
-      {/* Title + phase */}
-      <div className="pointer-events-none absolute left-5 top-4">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">EBY · Mission control</div>
-        <div className="text-lg font-semibold text-ink">The world we are reconnecting</div>
-        <div className="mt-0.5 text-xs text-ink-muted">{ph.label} · {stats.placed} of {stats.total} on the map</div>
+      {/* Title */}
+      <div className="pointer-events-none absolute left-6 top-5">
+        <div className="glass inline-flex flex-col gap-0.5 rounded-2xl px-4 py-3 shadow-card">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-muted">EBY · Mission control</span>
+          <span className="text-[19px] font-semibold leading-tight text-ink">The world we are reconnecting</span>
+          <span className="text-xs text-ink-muted">{ph.label} · {filtered.length} of {stats.total} shown</span>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="absolute left-5 top-24 flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2">
-        <div className="inline-flex overflow-hidden rounded-lg border border-line text-xs">
-          {(["all", "org", "person"] as const).map((k) => (
-            <button key={k} onClick={() => setFKind(k)} className={`px-2.5 py-1.5 ${fKind === k ? "bg-primary text-primary-contrast" : "bg-card text-ink-soft hover:bg-surface-muted"}`}>
-              {k === "all" ? "All" : k === "org" ? "Orgs" : "People"}
-            </button>
-          ))}
-        </div>
-        <Select value={fOwner} onChange={setFOwner}>
-          <option value="all">All owners</option>
-          {owners.map((o) => <option key={o} value={o}>{o}</option>)}
-        </Select>
-        <Select value={fSegment} onChange={setFSegment}>
-          <option value="all">All segments</option>
-          {segments.map((s) => <option key={s} value={s}>{s}</option>)}
-        </Select>
-        <Select value={fCountry} onChange={setFCountry}>
-          <option value="all">All countries</option>
-          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
-        </Select>
-        <Select value={colorBy} onChange={(v) => setColorBy(v as any)}>
-          <option value="owner">Color: owner</option>
-          <option value="segment">Color: segment</option>
-          <option value="kind">Color: type</option>
-        </Select>
-        {(fOwner !== "all" || fSegment !== "all" || fCountry !== "all" || fKind !== "all") && (
-          <button onClick={() => { setFOwner("all"); setFSegment("all"); setFCountry("all"); setFKind("all"); }} className="rounded-lg border border-line bg-card px-2.5 py-1.5 text-xs text-ink-muted hover:text-ink">
-            Clear
-          </button>
-        )}
-        <span className="rounded-lg bg-card px-2.5 py-1.5 text-xs font-medium text-ink">{filtered.length} shown</span>
-      </div>
-
-      {/* Legend (owners) */}
-      {colorBy === "owner" && owners.length > 0 && (
-        <div className="absolute bottom-4 left-5 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-card px-3 py-2 backdrop-blur">
-          {owners.map((o) => (
-            <span key={o} className="flex items-center gap-1.5 text-xs text-ink-soft">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: ownerColor(o) }} /> {o}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Collapsible dashboard */}
-      <div className={`absolute right-4 top-4 transition-all ${dashOpen ? "w-64" : "w-auto"}`}>
-        {dashOpen ? (
-          <div className="card animate-rise p-4 backdrop-blur">
+      {/* Stats (collapsible) */}
+      <div className="absolute right-6 top-5">
+        {statsOpen ? (
+          <div className="card animate-rise w-60 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="label-eyebrow">Dashboard</span>
-              <button onClick={() => setDashOpen(false)} className="text-xs text-ink-muted hover:text-ink" title="Minimize">Minimize</button>
+              <span className="label-eyebrow">Snapshot</span>
+              <button onClick={() => setStatsOpen(false)} className="text-xs text-ink-muted hover:text-ink">Hide</button>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "Interviews", value: stats.interviews, href: "/interactions", sub: "/ 25 goal" },
+                { label: "Interviews", value: stats.interviews, href: "/interactions" },
                 { label: "People", value: stats.people, href: "/people" },
-                { label: "Organizations", value: stats.orgs, href: "/organizations" },
-                { label: "Deals", value: stats.deals, href: "/deals" },
+                { label: "Orgs", value: stats.orgs, href: "/organizations" },
                 { label: "Overdue", value: stats.overdue, href: "/people", warn: stats.overdue > 0 },
               ].map((s) => (
                 <button key={s.label} onClick={() => router.push(s.href)} className="rounded-xl border border-line bg-surface-muted p-2.5 text-left transition hover:border-primary">
                   <div className="label-eyebrow">{s.label}</div>
-                  <div className={`mt-1 text-2xl font-semibold ${s.warn ? "text-danger" : "text-ink"}`}>{s.value}</div>
-                  {s.sub && <div className="text-[10px] text-ink-muted">{s.sub}</div>}
+                  <div className={`mt-0.5 text-xl font-semibold ${s.warn ? "text-danger" : "text-ink"}`}>{s.value}</div>
                 </button>
               ))}
             </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (stats.interviews / 25) * 100)}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent" style={{ width: `${Math.min(100, (stats.interviews / 25) * 100)}%` }} />
             </div>
-            <div className="mt-1 text-[10px] text-ink-muted">{stats.interviews} / 25 discovery interviews</div>
+            <button onClick={() => router.push("/dashboard")} className="mt-3 w-full text-center text-xs font-medium text-primary hover:underline">
+              Open full dashboard →
+            </button>
           </div>
         ) : (
-          <button onClick={() => setDashOpen(true)} className="btn-primary text-xs">
-            Dashboard
-          </button>
+          <button onClick={() => setStatsOpen(true)} className="btn-ghost bg-card text-xs">Snapshot</button>
         )}
+      </div>
+
+      {/* Control dock */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+        <div className="glass flex flex-wrap items-center gap-2.5 rounded-2xl px-3 py-2.5 shadow-pop">
+          {/* Type segmented */}
+          <div className="inline-flex overflow-hidden rounded-full border border-line">
+            {([["all", "All"], ["org", "Orgs"], ["person", "People"]] as const).map(([k, lbl]) => (
+              <button key={k} onClick={() => setFKind(k)} className={`px-3 py-1.5 text-xs font-medium transition ${fKind === k ? "bg-primary text-primary-contrast" : "text-ink-soft hover:bg-surface-muted"}`}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+
+          <span className="h-5 w-px bg-line" />
+
+          {/* Owner avatar chips */}
+          <div className="flex items-center gap-1">
+            {ownerCounts.map(([owner]) => {
+              const on = fOwner === owner;
+              return (
+                <button
+                  key={owner}
+                  title={owner}
+                  onClick={() => setFOwner(on ? "all" : owner)}
+                  className={`rounded-full p-0.5 transition ${on ? "ring-2 ring-primary" : "opacity-80 hover:opacity-100"}`}
+                >
+                  <OwnerAvatar owner={owner} size={24} />
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="h-5 w-px bg-line" />
+
+          <Dropdown value={fSegment} onChange={setFSegment}>
+            <option value="all">All segments</option>
+            {segments.map((s) => <option key={s} value={s}>{s}</option>)}
+          </Dropdown>
+          <Dropdown value={fCountry} onChange={setFCountry}>
+            <option value="all">All countries</option>
+            {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+          </Dropdown>
+
+          <span className="h-5 w-px bg-line" />
+
+          <Dropdown value={colorBy} onChange={(v) => setColorBy(v as any)}>
+            <option value="owner">Color: owner</option>
+            <option value="segment">Color: segment</option>
+            <option value="kind">Color: type</option>
+          </Dropdown>
+
+          {active && (
+            <button onClick={() => { setFOwner("all"); setFSegment("all"); setFCountry("all"); setFKind("all"); }} className={Pill}>
+              Clear
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
