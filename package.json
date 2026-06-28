@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen:data": "node scripts/generate-data.mjs"
+    "gen:data": "node scripts/generate-data.mjs",
+    "verify:registry": "node scripts/verify-registry-coverage.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.106.0",
