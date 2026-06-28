@@ -6,7 +6,11 @@
 > and a phased roadmap. Read with EBY-TECH-HANDOFF.md (current state) and
 > EBY-DESIGN-SYSTEM-BRIEF.md (visual direction). Living doc; update each session.
 
-Last updated: 2026-06-26. Status: PLAN for approval before building.
+Last updated: 2026-06-28. Status: APPROVED and in build. Phase 1 (field-registry
+framework) is live for People + Organizations; the design system is built on
+`feature/design-system` (PR #2). Next up: Phase 2 (port the remaining objects to
+the framework), then Phase 3 Power UX, then Phase 4 AI logger v2. See
+EBY-TECH-HANDOFF.md section 12 for the full ordered backlog and locked decisions.
 
 ---
 
