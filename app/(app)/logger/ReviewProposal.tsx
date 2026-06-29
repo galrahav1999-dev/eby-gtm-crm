@@ -235,6 +235,12 @@ export function ReviewProposal({
 
       <div className="sticky bottom-4 flex items-center gap-3 rounded-xl border border-line bg-card p-3 shadow-card">
         <button type="button" onClick={save} disabled={busy} className="btn-primary">
+          {busy && (
+            <svg viewBox="0 0 24 24" fill="none" className="mr-1.5 h-4 w-4 animate-spin" aria-hidden>
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+              <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          )}
           {busy ? "Saving…" : "Accept and save"}
         </button>
         <Link href="/logger" className="btn-ghost">
