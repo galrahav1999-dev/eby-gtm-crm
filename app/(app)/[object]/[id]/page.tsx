@@ -67,14 +67,18 @@ export default async function DetailPage({ params }: { params: { object: string;
   return (
     <div>
       <PageHeader back title={def.title(record)}>
-        <Link href={`/${def.key}/${params.id}/edit`} className="btn-ghost">
-          Edit
-        </Link>
-        <DeleteButton
-          action={archiveRecordAction.bind(null, def.key, params.id)}
-          label="Archive"
-          confirmText={`Archive this ${def.singular.toLowerCase()}? It can be restored later.`}
-        />
+        {!def.appendOnly && (
+          <>
+            <Link href={`/${def.key}/${params.id}/edit`} className="btn-ghost">
+              Edit
+            </Link>
+            <DeleteButton
+              action={archiveRecordAction.bind(null, def.key, params.id)}
+              label="Archive"
+              confirmText={`Archive this ${def.singular.toLowerCase()}? It can be restored later.`}
+            />
+          </>
+        )}
       </PageHeader>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
