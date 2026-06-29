@@ -2,9 +2,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Badge } from "@/components/crm/ui";
 import { SubmitButton } from "@/components/crm/form";
-import { parseText, parseAudio } from "./actions";
+import { parseText } from "./actions";
+import { AudioUploader } from "./AudioUploader";
 
 export const dynamic = "force-dynamic";
+// Transcribing a long recording can take a while; allow a longer function run.
+export const maxDuration = 300;
 
 export default async function LoggerPage() {
   const aiOn = !!process.env.ANTHROPIC_API_KEY;
@@ -46,23 +49,8 @@ export default async function LoggerPage() {
           </div>
         </form>
 
-        {/* Upload audio */}
-        <form action={parseAudio} className="card p-5">
-          <h2 className="mb-1 text-sm font-semibold text-ink">Upload a recording</h2>
-          <p className="mb-3 text-xs text-ink-muted">
-            We store the audio, transcribe it, then extract records.
-            {!sttOn && " (Needs OPENAI_API_KEY to transcribe.)"}
-          </p>
-          <input
-            type="file"
-            name="audio"
-            accept="audio/*"
-            className="block w-full text-sm text-ink-soft file:mr-3 file:rounded-lg file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:text-primary"
-          />
-          <div className="mt-3">
-            <SubmitButton label="Upload & extract" />
-          </div>
-        </form>
+        {/* Upload audio (direct-to-storage, no size limit) */}
+        <AudioUploader sttOn={sttOn} />
       </div>
 
       {/* Recent runs */}

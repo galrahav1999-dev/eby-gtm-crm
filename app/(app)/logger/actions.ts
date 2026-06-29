@@ -38,27 +38,26 @@ export async function parseText(fd: FormData) {
   redirect(`/logger/${ing.id}`);
 }
 
-export async function parseAudio(fd: FormData) {
-  const file = fd.get("audio") as File | null;
-  if (!file || file.size === 0) throw new Error("Choose an audio file first.");
+/**
+ * Audio is uploaded straight from the browser to Supabase Storage (see
+ * AudioUploader), which avoids the Vercel/Next server-action request body limit
+ * that blocks multi-megabyte recordings. This action receives only the stored
+ * path, then transcribes server-side by downloading the file. Returns the
+ * ingestion id so the client can navigate to the review page.
+ */
+export async function parseAudioPath(path: string, filename: string): Promise<{ id: string }> {
   const supabase = createClient();
-
-  const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
-  const { error: upErr } = await supabase.storage.from("recordings").upload(path, file, {
-    contentType: file.type || "audio/mpeg",
-    upsert: false,
-  });
-  if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
-
   const { data: ing, error } = await supabase
     .from("ai_ingestions")
-    .insert({ source_type: "audio", audio_path: path, audio_filename: file.name, status: "transcribing" })
+    .insert({ source_type: "audio", audio_path: path, audio_filename: filename, status: "transcribing" })
     .select("id")
     .single();
   if (error) throw new Error(error.message);
 
   try {
-    const transcript = await transcribeAudio(file, file.name);
+    const { data: blob, error: dlErr } = await supabase.storage.from("recordings").download(path);
+    if (dlErr || !blob) throw new Error(dlErr?.message || "Could not read the uploaded recording.");
+    const transcript = await transcribeAudio(blob, filename);
     await supabase.from("ai_ingestions").update({ transcript, status: "transcribed" }).eq("id", ing.id);
     await runExtraction(ing.id, transcript);
   } catch (e) {
@@ -68,7 +67,7 @@ export async function parseAudio(fd: FormData) {
       .eq("id", ing.id);
   }
   revalidatePath("/logger");
-  redirect(`/logger/${ing.id}`);
+  return { id: ing.id };
 }
 
 function includeSet(fd: FormData, prefix: string): Set<number> {
