@@ -119,17 +119,17 @@ export default function CompanyCardReveal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 animate-fade-in bg-black/70 backdrop-blur-md" onClick={closeCard} />
 
-      <div className="relative z-10 flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-ink-900/95 shadow-[0_40px_120px_-30px_rgba(0,0,0,0.9)] animate-fade-in lg:flex-row">
+      <div className="relative z-10 flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_40px_120px_-30px_rgba(0,0,0,0.9)] animate-fade-in lg:flex-row">
         <div key={company.id} className="account-reveal flex min-w-0 flex-1 flex-col md:flex-row">
         {/* ---- LEFT: company logo / identity ---- */}
         <aside
-          className="relative flex shrink-0 flex-col items-center gap-4 border-b border-white/5 p-6 md:w-[270px] md:border-b-0 md:border-r"
+          className="relative flex shrink-0 flex-col items-center gap-4 border-b border-line-soft p-6 md:w-[270px] md:border-b-0 md:border-r"
           style={{ background: `radial-gradient(120% 80% at 50% 0%, ${accent}22, transparent 70%)` }}
         >
           <div className="relative mt-2">
             <div className="absolute -inset-3 rounded-3xl opacity-50 blur-2xl" style={{ background: accent }} />
             <div
-              className="account-logo relative grid h-28 w-28 place-items-center overflow-hidden rounded-3xl text-4xl font-black text-white ring-2 ring-white/20"
+              className="account-logo relative grid h-28 w-28 place-items-center overflow-hidden rounded-3xl text-4xl font-black text-ink ring-2 ring-line"
               style={{ background: `linear-gradient(140deg, ${accent}, ${accent}66)` }}
             >
               <div className="logo-shine" />
@@ -138,11 +138,11 @@ export default function CompanyCardReveal() {
           </div>
 
           <div className="text-center">
-            <div className="text-lg font-bold tracking-tight text-white">{company.name}</div>
-            <div className="mt-0.5 text-xs text-slate-400">
+            <div className="text-lg font-bold tracking-tight text-ink">{company.name}</div>
+            <div className="mt-0.5 text-xs text-ink-muted">
               {dossier.industry} · {dossier.employees} employees
             </div>
-            <div className="mt-1 text-xs text-slate-500">{company.city}, {company.country}</div>
+            <div className="mt-1 text-xs text-ink-muted">{company.city}, {company.country}</div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -152,15 +152,15 @@ export default function CompanyCardReveal() {
 
           <button
             onClick={() => openRepView(company.ownerRep)}
-            className="group mt-auto flex w-full items-center gap-2 rounded-xl bg-white/5 p-2.5 text-left transition-colors hover:bg-white/10"
+            className="group mt-auto flex w-full items-center gap-2 rounded-xl bg-surface-muted p-2.5 text-left transition-colors hover:bg-surface-muted"
             title={`View ${company.ownerRep}'s full book`}
           >
             <RepAvatar rep={company.ownerRep} size={30} />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-white">{company.ownerRep}</div>
-              <div className="text-[11px] text-slate-500">Account owner · view book</div>
+              <div className="truncate text-sm font-medium text-ink">{company.ownerRep}</div>
+              <div className="text-[11px] text-ink-muted">Account owner · view book</div>
             </div>
-            <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-500 transition-transform group-hover:translate-x-0.5" fill="none">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-muted transition-transform group-hover:translate-x-0.5" fill="none">
               <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -175,7 +175,7 @@ export default function CompanyCardReveal() {
         <div className="relative min-w-0 flex-1 overflow-y-auto">
           <button
             onClick={closeCard}
-            className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white"
+            className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink"
             aria-label="Close"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
@@ -198,13 +198,13 @@ export default function CompanyCardReveal() {
             <Section title="Ongoing deals & ops">
               <div className="space-y-1.5">
                 {dossier.ops.map((op, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-xl border border-white/5 bg-ink-850/70 px-3 py-2">
+                  <div key={i} className="flex items-center gap-3 rounded-xl border border-line-soft bg-card px-3 py-2">
                     <span className="h-2 w-2 rounded-full" style={{ background: op.tone === "primary" ? accent : "#64748b" }} />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-white">{op.name}</div>
-                      <div className="text-[11px] text-slate-500">{op.stage}</div>
+                      <div className="truncate text-sm font-medium text-ink">{op.name}</div>
+                      <div className="text-[11px] text-ink-muted">{op.stage}</div>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums text-white">{fmtMoney(op.value)}</span>
+                    <span className="text-sm font-semibold tabular-nums text-ink">{fmtMoney(op.value)}</span>
                   </div>
                 ))}
               </div>
@@ -214,7 +214,7 @@ export default function CompanyCardReveal() {
             <Section title="Current stack">
               <div className="flex flex-wrap gap-1.5">
                 {dossier.stack.map((t) => (
-                  <span key={t} className="chip bg-ink-800 text-slate-300 ring-1 ring-white/5">{t}</span>
+                  <span key={t} className="chip bg-card text-ink-soft ring-1 ring-line">{t}</span>
                 ))}
               </div>
             </Section>
@@ -231,7 +231,7 @@ export default function CompanyCardReveal() {
             <Section title="Next steps">
               <div className="space-y-1.5">
                 {dossier.nextSteps.map((step, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm text-slate-200">
+                  <div key={i} className="flex items-start gap-2 text-sm text-ink-soft">
                     <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full text-[10px]" style={{ background: `${accent}22`, color: accent }}>
                       {i + 1}
                     </span>
@@ -242,11 +242,11 @@ export default function CompanyCardReveal() {
             </Section>
 
             {/* AI + action */}
-            <div className="rounded-xl border border-accent/20 bg-accent/5 p-3">
-              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-accent-soft">
+            <div className="rounded-xl border border-primary bg-primary-soft p-3">
+              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                 <SparkIcon className="h-3.5 w-3.5" /> AI-suggested follow-up
               </div>
-              <p className="text-sm leading-relaxed text-slate-200">{company.aiFollowUp || "Re-engage with a tailored value recap."}</p>
+              <p className="text-sm leading-relaxed text-ink-soft">{company.aiFollowUp || "Re-engage with a tailored value recap."}</p>
               <button onClick={() => draftFollowUp(company.id)} className="btn-primary mt-3 w-full">
                 <SparkIcon className="h-4 w-4" /> Draft follow-up for approval
               </button>
@@ -291,19 +291,19 @@ function AccountRail({
   onRep: () => void;
 }) {
   return (
-    <aside className="hidden w-[230px] shrink-0 flex-col border-l border-white/5 bg-ink-950/40 lg:flex">
-      <div className="border-b border-white/5 p-3">
+    <aside className="hidden w-[230px] shrink-0 flex-col border-l border-line-soft bg-surface lg:flex">
+      <div className="border-b border-line-soft p-3">
         <div className="label-eyebrow">Browse · {context}</div>
         <div className="mt-2 flex gap-1">
           <button
             onClick={onCity}
-            className={`chip flex-1 justify-center ${!inRepView ? "bg-white/10 text-white ring-1 ring-white/15" : "text-slate-400 hover:bg-white/5"}`}
+            className={`chip flex-1 justify-center ${!inRepView ? "bg-surface-muted text-ink ring-1 ring-line" : "text-ink-muted hover:bg-surface-muted"}`}
           >
             This city
           </button>
           <button
             onClick={onRep}
-            className={`chip flex-1 justify-center ${inRepView ? "bg-white/10 text-white ring-1 ring-white/15" : "text-slate-400 hover:bg-white/5"}`}
+            className={`chip flex-1 justify-center ${inRepView ? "bg-surface-muted text-ink ring-1 ring-line" : "text-ink-muted hover:bg-surface-muted"}`}
           >
             Owner’s book
           </button>
@@ -315,15 +315,15 @@ function AccountRail({
             key={c.id}
             onClick={() => onPick(c)}
             className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors ${
-              c.id === activeId ? "bg-accent/15 ring-1 ring-accent/30" : "hover:bg-white/5"
+              c.id === activeId ? "bg-primary-soft ring-1 ring-primary" : "hover:bg-surface-muted"
             }`}
           >
             <RepAvatar rep={c.ownerRep} size={20} />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium text-white">{c.name}</div>
-              <div className="truncate text-[10px] text-slate-500">{c.stage}</div>
+              <div className="truncate text-[13px] font-medium text-ink">{c.name}</div>
+              <div className="truncate text-[10px] text-ink-muted">{c.stage}</div>
             </div>
-            <span className="text-[11px] font-semibold tabular-nums text-slate-300">{fmtMoney(c.dealValue)}</span>
+            <span className="text-[11px] font-semibold tabular-nums text-ink-soft">{fmtMoney(c.dealValue)}</span>
           </button>
         ))}
       </div>
@@ -340,7 +340,7 @@ function statusChip(status: string) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{title}</div>
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{title}</div>
       {children}
     </div>
   );
@@ -348,10 +348,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Metric({ label, value, sub, accent, danger }: { label: string; value: string; sub?: string; accent?: string; danger?: boolean }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-ink-850/70 p-3">
+    <div className="rounded-xl border border-line-soft bg-card p-3">
       <div className="label-eyebrow">{label}</div>
       <div className="mt-1 text-sm font-semibold" style={{ color: accent ?? "#fff" }}>{value}</div>
-      {sub && <div className={`mt-0.5 text-[11px] ${danger ? "font-medium text-rose-400" : "text-slate-500"}`}>{sub}</div>}
+      {sub && <div className={`mt-0.5 text-[11px] ${danger ? "font-medium text-rose-400" : "text-ink-muted"}`}>{sub}</div>}
     </div>
   );
 }

@@ -1,48 +1,44 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./lib/**/*.{ts,tsx}",
-  ],
+  darkMode: ['class', '[data-theme="dark"]'],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Linear/Superhuman-grade dark palette
+        // Semantic, theme-aware tokens (resolve to CSS vars set per data-theme).
+        surface: "var(--paper)",
+        "surface-muted": "var(--mist)",
+        card: "var(--card)",
+        "card-raised": "var(--card-raised)",
+        field: "var(--field)",
         ink: {
-          950: "#08090d",
-          900: "#0b0d12",
-          850: "#0f1117",
-          800: "#13151c",
-          750: "#181b24",
-          700: "#1e212b",
-          600: "#272b38",
-          500: "#363b4d",
+          DEFAULT: "var(--ink)",
+          soft: "var(--ink-soft)",
+          muted: "var(--ink-muted)",
         },
-        accent: {
-          DEFAULT: "#6366f1",
-          soft: "#818cf8",
-          glow: "#a5b4fc",
+        line: {
+          DEFAULT: "var(--line)",
+          soft: "var(--line-soft)",
         },
+        primary: {
+          DEFAULT: "var(--primary)",
+          strong: "var(--primary-strong)",
+          contrast: "var(--primary-contrast)",
+        },
+        accent: "var(--accent)",
+        growth: "var(--growth)",
+        danger: "var(--danger)",
       },
       fontFamily: {
-        sans: [
-          "var(--font-inter)",
-          "ui-sans-serif",
-          "system-ui",
-          "-apple-system",
-          "Segoe UI",
-          "Roboto",
-          "Helvetica Neue",
-          "Arial",
-          "sans-serif",
-        ],
-        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        sans: ["var(--font-geist-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
+        hebrew: ["var(--font-heebo)", "ui-sans-serif", "sans-serif"],
+        serif: ["var(--font-frank)", "ui-serif", "serif"],
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(99,102,241,0.35), 0 8px 40px -8px rgba(99,102,241,0.45)",
-        card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 12px 40px -16px rgba(0,0,0,0.8)",
+        card: "var(--shadow-card)",
+        pop: "var(--shadow-pop)",
       },
       keyframes: {
         "fade-in": {
@@ -53,9 +49,6 @@ const config: Config = {
           from: { opacity: "0", transform: "translateX(16px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
         pulseGlow: {
           "0%, 100%": { opacity: "0.55" },
           "50%": { opacity: "1" },
@@ -64,7 +57,6 @@ const config: Config = {
       animation: {
         "fade-in": "fade-in 0.4s cubic-bezier(0.22,1,0.36,1) both",
         "slide-in": "slide-in 0.35s cubic-bezier(0.22,1,0.36,1) both",
-        shimmer: "shimmer 1.6s infinite",
         "pulse-glow": "pulseGlow 2.4s ease-in-out infinite",
       },
     },

@@ -103,7 +103,7 @@ export function RecordForm({
     <form action={action} className="space-y-5">
       {sections.map((s) => (
         <section key={s.name} className="card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white">{s.name}</h2>
+          <h2 className="mb-4 text-sm font-semibold text-ink">{s.name}</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {s.fields.map((f) => (
               <div key={f.name} className={f.widget === "textarea" ? "md:col-span-2" : ""}>

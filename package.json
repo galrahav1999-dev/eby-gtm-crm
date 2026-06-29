@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen:data": "node scripts/generate-data.mjs"
+    "gen:data": "node scripts/generate-data.mjs",
+    "verify:registry": "node scripts/verify-registry-coverage.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.106.0",
@@ -16,6 +17,7 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "@types/topojson-client": "^3.1.5",
+    "geist": "^1.7.2",
     "mapbox-gl": "3.5.2",
     "maplibre-gl": "^4.7.1",
     "next": "14.2.5",

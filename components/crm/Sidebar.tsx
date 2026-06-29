@@ -14,8 +14,8 @@ const NAV: { group: string; items: NavItem[] }[] = [
   {
     group: "Overview",
     items: [
-      { href: "/", label: "Dashboard", icon: "home" },
-      { href: "/map", label: "World map", icon: "globe" },
+      { href: "/", label: "Globe", icon: "globe" },
+      { href: "/dashboard", label: "Dashboard", icon: "home" },
       { href: "/activity", label: "Activity", icon: "pulse" },
     ],
   },
@@ -43,14 +43,12 @@ const NAV: { group: string; items: NavItem[] }[] = [
 export function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-white/5 bg-ink-900/60">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20 text-sm font-bold text-accent-glow ring-1 ring-accent/30">
-          ע
-        </div>
+    <aside className="flex w-56 shrink-0 flex-col border-r border-line-soft bg-surface backdrop-blur-xl">
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <div className="logo-tile h-9 w-9 text-[15px]">א</div>
         <div className="leading-tight">
-          <div className="text-sm font-semibold text-white">EBY GTM</div>
-          <div className="text-[10px] uppercase tracking-wider text-slate-500">Mission control</div>
+          <div className="text-sm font-semibold tracking-[0.14em] text-ink">EBY</div>
+          <div className="text-[10px] uppercase tracking-wider text-ink-muted">Mission control</div>
         </div>
       </div>
 
@@ -70,14 +68,14 @@ export function Sidebar() {
                       href={item.href}
                       className={`group flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition ${
                         active
-                          ? "bg-accent/15 text-white ring-1 ring-accent/25"
-                          : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+                          ? "bg-primary-soft text-ink ring-1 ring-primary"
+                          : "text-ink-muted hover:bg-surface-muted hover:text-ink"
                       }`}
                     >
                       <Icon name={item.icon} className="h-4 w-4 shrink-0" />
                       <span className="flex-1">{item.label}</span>
                       {item.soon && (
-                        <span className="rounded bg-white/5 px-1 text-[9px] uppercase tracking-wide text-slate-500">
+                        <span className="rounded bg-surface-muted px-1 text-[9px] uppercase tracking-wide text-ink-muted">
                           soon
                         </span>
                       )}

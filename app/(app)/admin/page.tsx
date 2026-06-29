@@ -52,9 +52,9 @@ export default async function AdminPage() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {Object.entries(groups).map(([key, opts]) => (
           <div key={key} className="card p-4">
-            <h2 className="mb-3 text-sm font-semibold text-white">
+            <h2 className="mb-3 text-sm font-semibold text-ink">
               {FIELD_LABELS[key] ?? key}{" "}
-              <span className="font-mono text-[10px] text-slate-600">{key}</span>
+              <span className="font-mono text-[10px] text-ink-muted">{key}</span>
             </h2>
 
             <ul className="mb-3 space-y-1.5">
@@ -83,7 +83,7 @@ export default async function AdminPage() {
               <input
                 name="value"
                 placeholder="Add a value…"
-                className="w-full rounded-lg border border-white/10 bg-ink-800/80 px-2.5 py-1.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-accent/70"
+                className="w-full rounded-lg border border-line bg-card px-2.5 py-1.5 text-sm text-ink placeholder:text-ink-muted outline-none focus:border-primary"
               />
               <button type="submit" className="btn-ghost shrink-0 text-xs">
                 Add

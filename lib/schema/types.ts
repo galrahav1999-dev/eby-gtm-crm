@@ -45,6 +45,20 @@ export interface FieldDef {
   quote?: boolean;
   /** column width hint for list (unused yet). */
   listLabel?: string;
+  /** short helper text shown under the input (lighter than `help`). */
+  hint?: string;
+  /** whole-number input/validation (seats, signups, etc.). */
+  integer?: boolean;
+  /** group several fields onto one row under a shared sub-heading. */
+  group?: string;
+  /** prefill an empty form with today's date (for date widgets). */
+  defaultToday?: boolean;
+  /**
+   * Only show this field when the predicate is true for the current row
+   * (e.g. closed-won reason only when the stage is a closed-won stage).
+   * Detail/form renderers read this; absent means always show.
+   */
+  showWhen?: (row: Record<string, any>) => boolean;
 }
 
 export interface LinkedDef {

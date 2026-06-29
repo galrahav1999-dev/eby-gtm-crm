@@ -4,9 +4,9 @@ import { useFormStatus } from "react-dom";
 import { HelpTip } from "./ui";
 
 const fieldBase =
-  "w-full rounded-lg border border-white/10 bg-ink-800/80 px-3 py-2 text-sm text-slate-100 " +
-  "placeholder:text-slate-600 outline-none transition focus:border-accent/70 focus:bg-ink-800 " +
-  "focus:ring-2 focus:ring-accent/20";
+  "w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink " +
+  "placeholder:text-ink-muted outline-none transition focus:border-primary focus:bg-card " +
+  "focus:ring-2 focus:ring-primary";
 
 export function Wrap({
   label,
@@ -23,13 +23,13 @@ export function Wrap({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-slate-300">
+      <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-ink-soft">
         {label}
         {required && <span className="text-rose-400">*</span>}
         <HelpTip text={help} />
       </span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-ink-muted">{hint}</span>}
     </label>
   );
 }

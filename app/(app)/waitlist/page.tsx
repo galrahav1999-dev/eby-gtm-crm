@@ -36,7 +36,7 @@ export default async function WaitlistPage() {
         <div className="card overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/5 text-xs uppercase tracking-wider text-slate-400">
+              <tr className="border-b border-line-soft text-xs uppercase tracking-wider text-ink-muted">
                 <th className="px-4 py-2.5">Cohort</th>
                 <th className="px-4 py-2.5">Segment</th>
                 <th className="px-4 py-2.5 text-right">Signups</th>
@@ -50,23 +50,23 @@ export default async function WaitlistPage() {
             </thead>
             <tbody>
               {cohorts.map((c) => (
-                <tr key={c.id} className="border-b border-white/5">
+                <tr key={c.id} className="border-b border-line-soft">
                   <td className="px-4 py-3">
-                    <Link href={`/waitlist/${c.id}/edit`} className="font-medium text-white hover:text-accent-soft">
+                    <Link href={`/waitlist/${c.id}/edit`} className="font-medium text-ink hover:text-primary">
                       {c.cohort_label}
                     </Link>
                   </td>
                   <td className="px-4 py-3"><Badge value={c.segment} /></td>
-                  <td className="px-4 py-3 text-right text-slate-300">{c.signups}</td>
-                  <td className="px-4 py-3 text-right text-slate-300">{c.confirmed}</td>
-                  <td className="px-4 py-3 text-right text-slate-300">{c.activated}</td>
-                  <td className="px-4 py-3 text-right text-slate-300">{c.retained_d30}</td>
-                  <td className="px-4 py-3 text-right text-slate-300">{c.paid}</td>
-                  <td className="px-4 py-3 text-right text-slate-400">{pct(c.confirmed, c.signups)}</td>
-                  <td className="px-4 py-3 text-right text-slate-400">{pct(c.paid, c.signups)}</td>
+                  <td className="px-4 py-3 text-right text-ink-soft">{c.signups}</td>
+                  <td className="px-4 py-3 text-right text-ink-soft">{c.confirmed}</td>
+                  <td className="px-4 py-3 text-right text-ink-soft">{c.activated}</td>
+                  <td className="px-4 py-3 text-right text-ink-soft">{c.retained_d30}</td>
+                  <td className="px-4 py-3 text-right text-ink-soft">{c.paid}</td>
+                  <td className="px-4 py-3 text-right text-ink-muted">{pct(c.confirmed, c.signups)}</td>
+                  <td className="px-4 py-3 text-right text-ink-muted">{pct(c.paid, c.signups)}</td>
                 </tr>
               ))}
-              <tr className="bg-white/[0.02] font-medium text-white">
+              <tr className="bg-surface-muted font-medium text-ink">
                 <td className="px-4 py-3" colSpan={2}>Total</td>
                 <td className="px-4 py-3 text-right">{totals.signups}</td>
                 <td className="px-4 py-3 text-right">{totals.confirmed}</td>

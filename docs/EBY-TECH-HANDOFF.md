@@ -5,7 +5,8 @@
 > file layout, UX principles, what is built, and what is next. Keep it updated
 > every session. Author/owner: Gal. Built with Claude Code.
 
-Last updated: 2026-06-27.
+Last updated: 2026-06-28. See EBY-MASTER-INDEX.md for the doc set, and
+EBY-DESIGN-SYSTEM.md / EBY-QA.md / EBY-DEVOPS.md for those categories.
 
 ---
 
@@ -36,9 +37,12 @@ plain confident language.
 - **Error monitoring:** Sentry, optional, activates when `NEXT_PUBLIC_SENTRY_DSN`
   is set (inert otherwise; builds stay clean).
 - **AI:** Anthropic (extraction) + OpenAI Whisper (audio), server-side, key-gated.
-- **State of design:** the UI currently uses the inherited dark "cockpit" theme.
-  A new BRIGHT design system is being produced from docs/EBY-DESIGN-SYSTEM-BRIEF.md
-  and will be wired in later.
+- **State of design:** the bright "fields at dawn" design system is BUILT and wired
+  app-wide (light + brand-dark + auto-by-hour theming via CSS vars + `data-theme`),
+  with a full-screen time-of-day globe home and a separate `/dashboard`. Full detail
+  in EBY-DESIGN-SYSTEM.md. It lives on `feature/design-system` (PR #2 into develop),
+  not yet promoted to production. Some inner pages (record detail/edit, AI logger,
+  login) are still plainer than the Grade-A target; that is the design backlog.
 
 ---
 
@@ -179,7 +183,8 @@ the UI = Archive (recoverable); lists filter `archived_at is null`. Generic
 app/
   (app)/                  authenticated shell (sidebar + topbar)
     layout.tsx            auth guard + shell; "configure Supabase" if no env
-    page.tsx              dashboard (live counts, 25-interview tracker)
+    page.tsx              HOME = full-screen time-of-day globe (GlobeHome)
+    dashboard/page.tsx    data dashboard (live counts, 25-interview tracker)
     actions.ts            signOut
     organizations|people|deals|pilots|partners|interactions|waitlist/
       page.tsx            list (DataTable)
@@ -191,7 +196,7 @@ app/
     logger/               AI logger: page (input), [id] (review), actions.ts
     activity/page.tsx     audit log feed
     admin/page.tsx        edit field_options (+ actions.ts)
-    map/page.tsx          world globe (WorldMap)
+    (the old map/ "World Map" tab was removed; the globe is now the home page)
   api/
     options/route.ts      POST add a field_option (auth-checked)
     organizations/route.ts POST create org inline (auth-checked)
@@ -199,7 +204,11 @@ app/
   login/page.tsx          sign-in (password or magic link)
   global-error.tsx        Sentry-reporting crash fallback
 components/crm/           ui, form, Combobox, OrgPicker, DataTable, Sidebar,
-                          Topbar, BackButton, DeleteButton, ComingSoon, *Form
+                          Topbar, BackButton, DeleteButton, ComingSoon, *Form,
+                          GlobeHome (full-screen time-of-day globe), ThemeToggle
+app/globals.css           design tokens (light/dark) + component classes
+tailwind.config.ts        semantic token map; darkMode via [data-theme="dark"]
+app/layout.tsx            fonts (geist pkg + Heebo/Frank) + no-flash theme init
 lib/
   supabase/{client,server,middleware}.ts
   enums.ts                seed/fallback dropdown lists + FALLBACK_OPTIONS map
@@ -380,6 +389,13 @@ Back buttons on all create/edit/detail pages. Seeded with real data. Deployed.
 generic routes/form/detail/CRUD, searchable FK with inline create of any object,
 hover help on every field, soft delete (archive). People and Organizations now
 render entirely from `lib/schema/*`. Build green; verified on real Postgres.
+
+**Design system DONE (on `feature/design-system`, PR #2, not yet promoted):**
+bright "fields at dawn" tokens, light/brand-dark/auto-by-hour theming, geist +
+Heebo + Frank fonts, full-screen time-of-day globe home, separate `/dashboard`,
+premium DataTable, the old World Map tab removed. Full detail in
+EBY-DESIGN-SYSTEM.md. Remaining design polish (record detail/edit, AI logger,
+login, Higgsfield hero media) is the immediate backlog.
 
 ---
 

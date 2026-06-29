@@ -35,10 +35,10 @@ export default function DrillPanel() {
 
   return (
     <div className="pointer-events-auto absolute right-3 top-3 z-20 flex max-h-[calc(100%-7rem)] w-72 flex-col rounded-2xl glass shadow-card sm:right-4 sm:top-4">
-      <div className="border-b border-white/5 px-4 py-3">
+      <div className="border-b border-line-soft px-4 py-3">
         <div className="label-eyebrow">{drill === "country" ? "Cities in" : "Accounts in"}</div>
-        <div className="text-sm font-semibold text-white">{drill === "country" ? selectedCountry : selectedCity}</div>
-        <div className="mt-0.5 text-[11px] text-slate-500">
+        <div className="text-sm font-semibold text-ink">{drill === "country" ? selectedCountry : selectedCity}</div>
+        <div className="mt-0.5 text-[11px] text-ink-muted">
           {drill === "country" ? `${cities.length} cities · click to zoom in` : `${accounts.length} accounts · click to open`}
         </div>
       </div>
@@ -51,15 +51,15 @@ export default function DrillPanel() {
                 <button
                   key={c.city}
                   onClick={() => drillToCity(selectedCountry!, c.city)}
-                  className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-white/5"
+                  className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-surface-muted"
                 >
                   <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: repColor(rep), boxShadow: `0 0 6px ${repColor(rep)}` }} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-white">{c.city}</div>
-                    <div className="text-[11px] text-slate-500">{c.dealCount} account{c.dealCount > 1 ? "s" : ""}</div>
+                    <div className="truncate text-sm font-medium text-ink">{c.city}</div>
+                    <div className="text-[11px] text-ink-muted">{c.dealCount} account{c.dealCount > 1 ? "s" : ""}</div>
                   </div>
-                  <span className="text-xs font-semibold tabular-nums text-slate-300">{fmtMoney(c.totalValue)}</span>
-                  <ChevronIcon className="h-4 w-4 text-slate-600 group-hover:text-slate-300" />
+                  <span className="text-xs font-semibold tabular-nums text-ink-soft">{fmtMoney(c.totalValue)}</span>
+                  <ChevronIcon className="h-4 w-4 text-ink-muted group-hover:text-ink-soft" />
                 </button>
               );
             })
@@ -67,17 +67,17 @@ export default function DrillPanel() {
               <button
                 key={c.id}
                 onClick={() => selectCompany(c)}
-                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-white/5"
+                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-surface-muted"
               >
                 <RepAvatar rep={c.ownerRep} size={22} />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-white">{c.name}</div>
+                  <div className="truncate text-sm font-medium text-ink">{c.name}</div>
                   <div className="mt-0.5">
                     <StageBadge stage={c.stage} className="!px-1.5 !py-0.5 !text-[10px]" />
                   </div>
                 </div>
-                <span className="text-xs font-semibold tabular-nums text-slate-300">{fmtMoney(c.dealValue)}</span>
-                <ChevronIcon className="h-4 w-4 text-slate-600 group-hover:text-slate-300" />
+                <span className="text-xs font-semibold tabular-nums text-ink-soft">{fmtMoney(c.dealValue)}</span>
+                <ChevronIcon className="h-4 w-4 text-ink-muted group-hover:text-ink-soft" />
               </button>
             ))}
       </div>

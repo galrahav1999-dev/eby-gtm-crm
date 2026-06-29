@@ -34,7 +34,7 @@ export default async function PartnerDetail({ params }: { params: { id: string }
       <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
         <div>
           <DetailField label="Primary contact">
-            {p.people ? <Link href={`/people/${p.people.id}`} className="text-accent-soft hover:underline">{personName(p.people)}</Link> : null}
+            {p.people ? <Link href={`/people/${p.people.id}`} className="text-primary hover:underline">{personName(p.people)}</Link> : null}
           </DetailField>
           <DetailField label="What they give us">{p.what_they_give}</DetailField>
           <DetailField label="Expected reach">{p.expected_reach}</DetailField>

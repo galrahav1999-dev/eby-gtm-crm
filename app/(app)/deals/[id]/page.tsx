@@ -28,7 +28,7 @@ export default async function DealDetail({ params }: { params: { id: string } })
   const nameOf = (id: string | null) => {
     if (!id) return null;
     const p = (peopleRows as Person[] | null)?.find((x) => x.id === id);
-    return p ? <Link href={`/people/${p.id}`} className="text-accent-soft hover:underline">{personName(p)}</Link> : null;
+    return p ? <Link href={`/people/${p.id}`} className="text-primary hover:underline">{personName(p)}</Link> : null;
   };
 
   const money = deal.acv != null ? `$${Number(deal.acv).toLocaleString()}` : null;
@@ -46,7 +46,7 @@ export default async function DealDetail({ params }: { params: { id: string } })
         <Badge value={deal.priority} />
         <Badge value={deal.owner} kind="owner" />
         {org && (
-          <Link href={`/organizations/${org.id}`} className="text-sm text-accent-soft hover:underline">
+          <Link href={`/organizations/${org.id}`} className="text-sm text-primary hover:underline">
             {org.name}
           </Link>
         )}
@@ -72,7 +72,7 @@ export default async function DealDetail({ params }: { params: { id: string } })
       </div>
 
       <DetailField label="Pains (their words)">
-        {deal.pains && <span className="italic text-slate-300">“{deal.pains}”</span>}
+        {deal.pains && <span className="italic text-ink-soft">“{deal.pains}”</span>}
       </DetailField>
       <DetailField label="Ideal state">{deal.ideal_state}</DetailField>
       <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
@@ -84,24 +84,24 @@ export default async function DealDetail({ params }: { params: { id: string } })
       <DetailField label="Notes">{deal.notes}</DetailField>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-white">Interactions on this deal</h2>
+        <h2 className="mb-3 text-sm font-semibold text-ink">Interactions on this deal</h2>
         {interactions && interactions.length > 0 ? (
-          <div className="card divide-y divide-white/5">
+          <div className="card divide-y divide-line">
             {interactions.map((it: any) => (
               <div key={it.id} className="px-4 py-3">
                 <div className="flex items-center justify-between">
                   <Badge value={it.type} />
-                  <span className="text-xs text-slate-500">{fmtDate(it.date)}</span>
+                  <span className="text-xs text-ink-muted">{fmtDate(it.date)}</span>
                 </div>
-                {it.outcome && <p className="mt-1 text-sm text-slate-300">{it.outcome}</p>}
+                {it.outcome && <p className="mt-1 text-sm text-ink-soft">{it.outcome}</p>}
                 {it.verbatim_quote && (
-                  <p className="mt-1 border-l-2 border-accent/40 pl-3 text-sm italic text-slate-400">“{it.verbatim_quote}”</p>
+                  <p className="mt-1 border-l-2 border-primary pl-3 text-sm italic text-ink-muted">“{it.verbatim_quote}”</p>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">No interactions logged on this deal yet.</p>
+          <p className="text-sm text-ink-muted">No interactions logged on this deal yet.</p>
         )}
       </section>
     </div>

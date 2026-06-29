@@ -12,10 +12,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     return (
       <div className="flex min-h-screen items-center justify-center p-8">
         <div className="card max-w-lg p-8">
-          <h1 className="text-lg font-semibold text-white">Almost there</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <h1 className="text-lg font-semibold text-ink">Almost there</h1>
+          <p className="mt-2 text-sm text-ink-muted">
             The app is running but not yet connected to its database. Add your Supabase
-            keys (see <span className="font-mono text-slate-300">docs/SETUP.md</span>) and
+            keys (see <span className="font-mono text-ink-soft">docs/SETUP.md</span>) and
             reload.
           </p>
         </div>
