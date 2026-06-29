@@ -77,6 +77,11 @@ const PHASE: Record<Phase, PhaseDef> = {
   },
 };
 
+// Beams converge on Jerusalem: the reconnection to Israel made visible.
+const ISRAEL = { lat: 31.7683, lng: 35.2137 };
+// Neon beam gradient: clear at the source, vivid sky-to-violet toward Israel.
+const BEAM_COLOR = ["rgba(56,189,248,0)", "rgba(56,189,248,0.85)", "#a78bfa"];
+
 const Pill =
   "rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink-soft outline-none transition hover:text-ink";
 
@@ -100,6 +105,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [fCountry, setFCountry] = useState("all");
   const [fKind, setFKind] = useState<"all" | "org" | "person">("all");
   const [statsOpen, setStatsOpen] = useState(true);
+  const [beamsOn, setBeamsOn] = useState(true);
 
   useEffect(() => setPhase(currentPhase()), []);
   useEffect(() => {
@@ -148,6 +154,25 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
       })),
     [filtered, colorBy]
   );
+  // Neon beams from each diaspora point to Jerusalem. Each flows at its own
+  // pace and starts at a staggered offset so the field feels alive, not pulsing
+  // in unison. Points already in Israel are skipped (no beam to themselves).
+  const beams = useMemo(() => {
+    if (!beamsOn) return [];
+    return colored
+      .filter((p) => Math.hypot(p.lat - ISRAEL.lat, p.lng - ISRAEL.lng) > 1.2)
+      .slice(0, 120)
+      .map((p, i) => ({
+        startLat: p.lat,
+        startLng: p.lng,
+        endLat: ISRAEL.lat,
+        endLng: ISRAEL.lng,
+        color: BEAM_COLOR,
+        speed: 2600 + ((i * 137) % 2600),
+        gap: ((i * 53) % 100) / 100,
+      }));
+  }, [colored, beamsOn]);
+
   const active = fOwner !== "all" || fSegment !== "all" || fCountry !== "all" || fKind !== "all";
   const ph = PHASE[phase];
 
@@ -180,6 +205,24 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           pointRadius={0.6}
           pointLabel={(d: any) => `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d.label}</div>`}
           onPointClick={(d: any) => router.push(d.href)}
+          arcsData={beams}
+          arcStartLat="startLat"
+          arcStartLng="startLng"
+          arcEndLat="endLat"
+          arcEndLng="endLng"
+          arcColor="color"
+          arcStroke={0.4}
+          arcAltitudeAutoScale={0.45}
+          arcDashLength={0.45}
+          arcDashGap={1.8}
+          arcDashInitialGap={(d: any) => d.gap}
+          arcDashAnimateTime={(d: any) => d.speed}
+          arcsTransitionDuration={400}
+          ringsData={beamsOn && beams.length ? [{ lat: ISRAEL.lat, lng: ISRAEL.lng }] : []}
+          ringColor={() => (t: number) => `rgba(167,139,250,${1 - t})`}
+          ringMaxRadius={4}
+          ringPropagationSpeed={2}
+          ringRepeatPeriod={1400}
         />
       </div>
 
@@ -274,6 +317,16 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
             <option value="segment">Color: segment</option>
             <option value="kind">Color: type</option>
           </Dropdown>
+
+          <button
+            onClick={() => setBeamsOn((v) => !v)}
+            title="Neon beams to Israel"
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+              beamsOn ? "bg-primary text-primary-contrast" : `${Pill}`
+            }`}
+          >
+            Beams
+          </button>
 
           {active && (
             <button onClick={() => { setFOwner("all"); setFSegment("all"); setFCountry("all"); setFKind("all"); }} className={Pill}>
