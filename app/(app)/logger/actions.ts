@@ -5,6 +5,7 @@ import { getAllOptions } from "@/lib/options";
 import { extractRecords } from "@/lib/ai/extract";
 import { transcribeAudio } from "@/lib/ai/transcribe";
 import { commitProposal, type IncludeSets } from "@/lib/ai/commit";
+import type { Proposal } from "@/lib/ai/extract";
 import { logAudit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -80,6 +81,85 @@ export async function parseAudioPath(path: string, filename: string): Promise<{ 
   }
   revalidatePath("/logger");
   return { id: ing.id };
+}
+
+/**
+ * Transcribe up to 3 uploaded files (already in Storage) plus optional pasted
+ * text, combine into one transcript, and extract once. Returns the ingestion id.
+ */
+export async function parseAudioPaths(
+  paths: string[],
+  filenames: string[],
+  pastedText?: string
+): Promise<{ id: string }> {
+  const supabase = createClient();
+  const { data: ing, error } = await supabase
+    .from("ai_ingestions")
+    .insert({
+      source_type: paths.length ? "audio" : "text",
+      audio_path: paths.join(",") || null,
+      audio_filename: filenames.join(", ") || null,
+      status: "transcribing",
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+
+  try {
+    const parts: string[] = [];
+    for (let i = 0; i < paths.length; i++) {
+      const { data: blob, error: dlErr } = await supabase.storage.from("recordings").download(paths[i]);
+      if (dlErr || !blob) throw new Error(dlErr?.message || "Could not read an uploaded recording.");
+      const t = await transcribeAudio(blob, filenames[i] || `audio-${i + 1}`);
+      parts.push(paths.length > 1 ? `# Recording ${i + 1}: ${filenames[i] ?? ""}\n${t}` : t);
+    }
+    const pasted = (pastedText ?? "").trim();
+    if (pasted) parts.push(paths.length ? `# Pasted notes\n${pasted}` : pasted);
+    const transcript = parts.join("\n\n");
+    if (!transcript.trim()) throw new Error("Nothing to read: no audio transcribed and no text pasted.");
+    await supabase.from("ai_ingestions").update({ transcript, status: "transcribed" }).eq("id", ing.id);
+    await runExtraction(ing.id, transcript);
+  } catch (e) {
+    await supabase
+      .from("ai_ingestions")
+      .update({ status: "error", error: e instanceof Error ? e.message : String(e) })
+      .eq("id", ing.id);
+  }
+  revalidatePath("/logger");
+  return { id: ing.id };
+}
+
+/**
+ * Commit the operator's edited proposal (from the review screen). Same dedupe,
+ * linking, and audit as the raw commit, but uses the values the human accepted,
+ * and stores the edited proposal back on the ingestion.
+ */
+export async function commitEdited(
+  id: string,
+  edited: Proposal,
+  includeArr: { organizations: number[]; people: number[]; deals: number[]; interactions: number[] }
+): Promise<{ ok: true }> {
+  const supabase = createClient();
+  const include: IncludeSets = {
+    organizations: new Set(includeArr.organizations),
+    people: new Set(includeArr.people),
+    interactions: new Set(includeArr.interactions),
+    deals: new Set(includeArr.deals),
+  };
+  const result = await commitProposal(supabase, edited, include);
+  await supabase.from("ai_ingestions").update({ status: "committed", result, proposal: edited }).eq("id", id);
+  await logAudit(supabase, {
+    action: "create",
+    table: "ai_ingestions",
+    recordId: id,
+    summary: `AI logger committed ${result.organizations.length} orgs, ${result.people.length} people, ${result.deals.length} deals, ${result.interactions.length} interactions`,
+  });
+  revalidatePath("/");
+  revalidatePath("/people");
+  revalidatePath("/organizations");
+  revalidatePath("/deals");
+  revalidatePath("/interactions");
+  return { ok: true };
 }
 
 function includeSet(fd: FormData, prefix: string): Set<number> {

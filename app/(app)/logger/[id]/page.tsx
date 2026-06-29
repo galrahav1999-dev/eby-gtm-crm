@@ -1,148 +1,162 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader, Badge } from "@/components/crm/ui";
-import { SubmitButton } from "@/components/crm/form";
+import { getAllOptions } from "@/lib/options";
+import { PageHeader, IdTag } from "@/components/crm/ui";
 import { DeleteButton } from "@/components/crm/DeleteButton";
-import { commitIngestion, discardIngestion } from "../actions";
+import { discardIngestion } from "../actions";
+import { ReviewProposal } from "../ReviewProposal";
 import type { Proposal } from "@/lib/ai/extract";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
-const FRIENDLY: Record<string, string> = {
-  organizations: "Organizations",
-  people: "People",
-  deals: "Deals",
-  interactions: "Interactions",
-};
+async function CommittedView({ result }: { result: any }) {
+  const supabase = createClient();
+  const ids = {
+    organizations: (result?.organizations ?? []) as string[],
+    people: (result?.people ?? []) as string[],
+    deals: (result?.deals ?? []) as string[],
+    interactions: (result?.interactions ?? []) as string[],
+  };
 
-function RecordCard({
-  prefix,
-  index,
-  record,
-}: {
-  prefix: string;
-  index: number;
-  record: Record<string, unknown>;
-}) {
-  const fields = Object.entries(record).filter(([, v]) => v != null && String(v).trim() !== "");
-  return (
-    <label className="flex cursor-pointer gap-3 border-b border-line-soft px-4 py-3 last:border-0">
-      <input type="checkbox" name={`${prefix}_${index}`} defaultChecked className="mt-1 accent-indigo-500" />
-      <div className="min-w-0 flex-1">
-        <dl className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
-          {fields.map(([k, v]) => (
-            <div key={k} className="flex gap-2 text-sm">
-              <dt className="shrink-0 text-ink-muted">{k.replace(/_/g, " ")}:</dt>
-              <dd className="min-w-0 text-ink-soft">{String(v)}</dd>
-            </div>
-          ))}
-        </dl>
+  const [orgs, ppl, dls, ints] = await Promise.all([
+    ids.organizations.length ? supabase.from("organizations").select("id, display_id, name").in("id", ids.organizations) : Promise.resolve({ data: [] as any[] }),
+    ids.people.length ? supabase.from("people").select("id, display_id, first_name, last_name").in("id", ids.people) : Promise.resolve({ data: [] as any[] }),
+    ids.deals.length ? supabase.from("deals").select("id, display_id, name").in("id", ids.deals) : Promise.resolve({ data: [] as any[] }),
+    ids.interactions.length ? supabase.from("interactions").select("id, display_id").in("id", ids.interactions) : Promise.resolve({ data: [] as any[] }),
+  ]);
+
+  const orgRows = orgs.data ?? [];
+  const personRows = ppl.data ?? [];
+  const dealRows = dls.data ?? [];
+  const intRows = ints.data ?? [];
+  const totalCreated = orgRows.length + personRows.length + dealRows.length + intRows.length;
+
+  if (totalCreated === 0) {
+    return (
+      <div>
+        <PageHeader back title="Nothing was saved" subtitle="No records were created from this run." />
+        <div className="mt-4 flex gap-3">
+          <Link href="/logger" className="btn-primary">Capture another</Link>
+          <Link href="/" className="btn-ghost">Back to the globe</Link>
+        </div>
       </div>
-    </label>
+    );
+  }
+
+  const created: { label: string; href: string; id: string }[] = [
+    ...orgRows.map((r: any) => ({ label: r.name ?? "Organization", href: `/organizations/${r.id}`, id: r.display_id })),
+    ...personRows.map((r: any) => ({ label: [r.first_name, r.last_name].filter(Boolean).join(" ") || "Person", href: `/people/${r.id}`, id: r.display_id })),
+    ...dealRows.map((r: any) => ({ label: r.name ?? "Deal", href: `/deals/${r.id}`, id: r.display_id })),
+    ...intRows.map((r: any) => ({ label: "Interaction", href: `/interactions/${r.id}`, id: r.display_id })),
+  ];
+
+  return (
+    <div>
+      <PageHeader
+        back
+        title="Saved"
+        subtitle={`Created ${orgRows.length} organization(s), ${personRows.length} person(s), ${dealRows.length} deal(s), ${intRows.length} interaction(s). Here is what you can do next.`}
+      />
+
+      <div className="card divide-y divide-line">
+        {created.map((c) => (
+          <Link key={c.href} href={c.href} className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-surface-muted">
+            <span className="text-sm font-medium text-ink">{c.label}</span>
+            <IdTag id={c.id} />
+          </Link>
+        ))}
+      </div>
+
+      <h2 className="mb-3 mt-8 text-sm font-semibold text-ink">Next steps</h2>
+      <div className="flex flex-wrap gap-3">
+        {personRows.map((r: any) => (
+          <Link key={r.id} href={`/people/${r.id}`} className="btn-ghost">
+            Open {[r.first_name, r.last_name].filter(Boolean).join(" ") || "person"}
+          </Link>
+        ))}
+        {orgRows.map((r: any) => (
+          <Link key={r.id} href={`/organizations/${r.id}`} className="btn-ghost">
+            Open {r.name ?? "organization"}
+          </Link>
+        ))}
+        {orgRows.map((r: any) => (
+          <Link key={`deal-${r.id}`} href={`/deals/new?org_id=${r.id}`} className="btn-ghost">
+            Start a deal for {r.name ?? "this org"}
+          </Link>
+        ))}
+        {orgRows.map((r: any) => (
+          <Link key={`pilot-${r.id}`} href={`/pilots/new?org_id=${r.id}`} className="btn-ghost">
+            Start a pilot for {r.name ?? "this org"}
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link href="/" className="btn-primary">Back to the globe</Link>
+        <Link href="/logger" className="btn-ghost">Log another</Link>
+      </div>
+    </div>
   );
 }
 
 export default async function ReviewPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
-  const { data: ing } = await supabase
-    .from("ai_ingestions")
-    .select("*")
-    .eq("id", params.id)
-    .single<any>();
+  const { data: ing } = await supabase.from("ai_ingestions").select("*").eq("id", params.id).single<any>();
   if (!ing) notFound();
 
   if (ing.status === "error") {
     return (
       <div>
         <PageHeader back title="AI logger" subtitle="Something went wrong on this run." />
-        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{ing.error}</div>
+        <div className="rounded-lg px-4 py-3 text-sm text-danger" style={{ background: "color-mix(in srgb, var(--danger) 12%, transparent)" }}>
+          {ing.error}
+        </div>
         <Link href="/logger" className="btn-ghost mt-4">Back to logger</Link>
       </div>
     );
   }
 
   if (ing.status === "committed") {
-    const r = ing.result ?? {};
-    const counts = [
-      ["organizations", r.organizations?.length ?? 0],
-      ["people", r.people?.length ?? 0],
-      ["deals", r.deals?.length ?? 0],
-      ["interactions", r.interactions?.length ?? 0],
-    ] as const;
+    return <CommittedView result={ing.result ?? {}} />;
+  }
+
+  const proposal = (ing.proposal ?? { organizations: [], people: [], deals: [], interactions: [], to_chase_next: [] }) as Proposal;
+  const total =
+    proposal.organizations.length + proposal.people.length + proposal.deals.length + proposal.interactions.length;
+
+  if (total === 0) {
     return (
       <div>
-        <PageHeader back title="Saved" subtitle="These records were created from this run." />
-        <div className="card p-5">
-          <div className="flex flex-wrap gap-4">
-            {counts.map(([k, n]) => (
-              <div key={k} className="text-center">
-                <div className="text-2xl font-semibold text-ink">{n as number}</div>
-                <div className="text-xs text-ink-muted">{k}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="mt-4 flex gap-3">
-          <Link href="/people" className="btn-ghost">View people</Link>
-          <Link href="/logger" className="btn-primary">Log another</Link>
-        </div>
+        <PageHeader back title="Review draft records" subtitle="The AI did not find any records to create from this conversation.">
+          <DeleteButton action={discardIngestion.bind(null, ing.id)} label="Discard" confirmText="Discard this run?" />
+        </PageHeader>
+        <div className="card px-6 py-12 text-center text-sm text-ink-muted">Nothing to review.</div>
+        <Link href="/logger" className="btn-primary mt-4">Capture another</Link>
       </div>
     );
   }
 
-  const proposal = (ing.proposal ?? { organizations: [], people: [], deals: [], interactions: [], to_chase_next: [] }) as Proposal;
-  const sections: { key: keyof typeof FRIENDLY; prefix: string; items: any[] }[] = [
-    { key: "organizations", prefix: "org", items: proposal.organizations },
-    { key: "people", prefix: "person", items: proposal.people },
-    { key: "deals", prefix: "deal", items: proposal.deals },
-    { key: "interactions", prefix: "interaction", items: proposal.interactions },
-  ];
-  const total = sections.reduce((n, s) => n + s.items.length, 0);
+  const options = await getAllOptions();
 
   return (
     <div>
-      <PageHeader back title="Review draft records" subtitle="Untick anything you don't want. Nothing is saved until you click Save.">
+      <PageHeader back title="Review and edit" subtitle="Check exactly where each value will go, edit anything, then accept.">
         <DeleteButton action={discardIngestion.bind(null, ing.id)} label="Discard" confirmText="Discard this run?" />
       </PageHeader>
 
-      {total === 0 ? (
-        <div className="card px-6 py-12 text-center text-sm text-ink-muted">
-          The AI did not find any records to create from this text.
+      <ReviewProposal id={ing.id} proposal={proposal} options={options} />
+
+      {proposal.to_chase_next?.length > 0 && (
+        <div className="card mt-5 p-4">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">To chase next</h3>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
+            {proposal.to_chase_next.map((t, i) => (
+              <li key={i}>{t}</li>
+            ))}
+          </ul>
         </div>
-      ) : (
-        <form action={commitIngestion.bind(null, ing.id)} className="space-y-5">
-          {sections.map((s) =>
-            s.items.length > 0 ? (
-              <div key={s.key}>
-                <h2 className="mb-2 text-sm font-semibold text-ink">
-                  {FRIENDLY[s.key]} <span className="text-ink-muted">({s.items.length})</span>
-                </h2>
-                <div className="card overflow-hidden">
-                  {s.items.map((rec, i) => (
-                    <RecordCard key={i} prefix={s.prefix} index={i} record={rec} />
-                  ))}
-                </div>
-              </div>
-            ) : null
-          )}
-
-          {proposal.to_chase_next?.length > 0 && (
-            <div className="card p-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">To chase next</h3>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
-                {proposal.to_chase_next.map((t, i) => (
-                  <li key={i}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            <SubmitButton label="Save selected records" />
-            <Link href="/logger" className="btn-ghost">Cancel</Link>
-          </div>
-        </form>
       )}
 
       {ing.transcript && (
