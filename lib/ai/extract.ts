@@ -74,7 +74,9 @@ STRICT RULES (follow exactly):
 4. Dates must be YYYY-MM-DD. If a date is relative ("next term"), put it in a timing field if one fits, otherwise leave the date null and mention it in notes.
 5. Link records by name: a person's org_name and an interaction's person_name/org_name should match the name you used for that organization/person in this same output.
 6. Always produce one interaction summarizing the conversation. Put the single sharpest verbatim quote in verbatim_quote.
-7. "to_chase_next": list the important fields the conversation left blank, so the team knows what to ask next time.`;
+7. "to_chase_next": list the important fields the conversation left blank, so the team knows what to ask next time.
+8. Tools, products, apps, curricula, or current vendors the person mentions go in the deal's "current_solution" (and notes if several). Capture every pain in their own words in "pains".
+9. Discovery-call completeness: if the recording is one person describing their situation, always return that person, one interaction, and (if any buying context, pains, or tools are present) one deal linked to them, so the call is fully captured.`;
 
 function enumProp(values: string[], description: string) {
   // string limited to allowed values, or null when unknown
