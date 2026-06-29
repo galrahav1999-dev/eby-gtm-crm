@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { parseAudioPath } from "./actions";
+import { createUploadTarget, parseAudioPath } from "./actions";
 
 /**
  * Uploads the recording directly from the browser to Supabase Storage (no
@@ -27,11 +27,11 @@ export function AudioUploader({ sttOn }: { sttOn: boolean }) {
     setErr(null);
     setStage("uploading");
     try {
+      const { path, token } = await createUploadTarget(file.name);
       const supabase = createClient();
-      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
       const { error } = await supabase.storage
         .from("recordings")
-        .upload(path, file, { contentType: file.type || "audio/mpeg", upsert: false });
+        .uploadToSignedUrl(path, token, file, { contentType: file.type || "audio/mpeg" });
       if (error) throw new Error(error.message);
       setStage("working");
       const { id } = await parseAudioPath(path, file.name);
