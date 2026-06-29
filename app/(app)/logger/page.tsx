@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Badge } from "@/components/crm/ui";
+import { hasKey } from "@/lib/ai/keys";
 import { AudioUploader } from "./AudioUploader";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +9,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export default async function LoggerPage() {
-  const aiOn = !!process.env.ANTHROPIC_API_KEY;
-  const sttOn = !!process.env.OPENAI_API_KEY;
+  const [aiOn, sttOn] = await Promise.all([hasKey("anthropic"), hasKey("openai")]);
 
   const supabase = createClient();
   const { data: recent } = await supabase
@@ -25,9 +25,17 @@ export default async function LoggerPage() {
         subtitle="Capture a call as audio or notes. The AI drafts records mapped to your fields, you review and edit every field, then accept. Nothing is saved until you do."
       />
 
-      {!aiOn && (
+      {(!aiOn || !sttOn) && (
         <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-          The AI logger is off until <span className="font-mono">ANTHROPIC_API_KEY</span> is set. You can still see past runs below.
+          {!aiOn && !sttOn
+            ? "Connect your AI keys to use the logger."
+            : !aiOn
+            ? "Extraction is off until you connect your Anthropic key."
+            : "Audio transcription is off until you connect your OpenAI key."}{" "}
+          <Link href="/settings" className="font-medium underline">
+            Open Settings
+          </Link>
+          .
         </div>
       )}
 

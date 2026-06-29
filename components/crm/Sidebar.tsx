@@ -35,6 +35,7 @@ const NAV: { group: string; items: NavItem[] }[] = [
     group: "Tools",
     items: [
       { href: "/logger", label: "AI logger", icon: "spark" },
+      { href: "/settings", label: "Settings", icon: "sliders" },
       { href: "/admin", label: "Admin / lists", icon: "sliders" },
     ],
   },
