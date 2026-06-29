@@ -39,11 +39,23 @@ export async function parseText(fd: FormData) {
 }
 
 /**
- * Audio is uploaded straight from the browser to Supabase Storage (see
- * AudioUploader), which avoids the Vercel/Next server-action request body limit
- * that blocks multi-megabyte recordings. This action receives only the stored
- * path, then transcribes server-side by downloading the file. Returns the
- * ingestion id so the client can navigate to the review page.
+ * Issue a one-time signed upload URL so the browser can upload the recording
+ * directly to Storage. This bypasses both the Vercel/Next server-action request
+ * body limit (which blocked multi-megabyte recordings) and storage RLS (the
+ * signed token is pre-authorized, so the browser does not need a session).
+ */
+export async function createUploadTarget(filename: string): Promise<{ path: string; token: string }> {
+  const supabase = createClient();
+  const safe = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+  const { data, error } = await supabase.storage.from("recordings").createSignedUploadUrl(safe);
+  if (error || !data) throw new Error(error?.message || "Could not start the upload.");
+  return { path: data.path, token: data.token };
+}
+
+/**
+ * After the browser uploads the file, this action transcribes it server-side by
+ * downloading from Storage, then extracts records. Returns the ingestion id so
+ * the client can navigate to the review page.
  */
 export async function parseAudioPath(path: string, filename: string): Promise<{ id: string }> {
   const supabase = createClient();
