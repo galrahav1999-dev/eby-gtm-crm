@@ -27,12 +27,12 @@ function renderValue(field: FieldDef, value: any, fkLabel?: string, fkKey?: stri
       return <span>${Number(value).toLocaleString()}</span>;
     case "fk":
       return fkLabel ? (
-        <Link href={`/${fkKey}/${value}`} className="text-accent-soft hover:underline">
+        <Link href={`/${fkKey}/${value}`} className="text-primary hover:underline">
           {fkLabel}
         </Link>
       ) : null;
     default:
-      return field.quote ? <span className="italic text-slate-300">“{String(value)}”</span> : <span>{String(value)}</span>;
+      return field.quote ? <span className="italic text-ink-soft">“{String(value)}”</span> : <span>{String(value)}</span>;
   }
 }
 
@@ -97,17 +97,17 @@ export default async function DetailPage({ params }: { params: { object: string;
 
       {linked.map((l) => (
         <section key={l.label} className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-white">{l.label}</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink">{l.label}</h2>
           {l.rows.length > 0 ? (
-            <div className="card divide-y divide-white/5">
+            <div className="card divide-y divide-line">
               {l.rows.map((r) => (
-                <Link key={r.id} href={`/${l.objectKey}/${r.id}`} className="block px-4 py-2.5 text-sm text-slate-200 transition hover:bg-white/[0.03]">
+                <Link key={r.id} href={`/${l.objectKey}/${r.id}`} className="block px-4 py-2.5 text-sm text-ink-soft transition hover:bg-surface-muted">
                   {r.title}
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-500">None yet.</p>
+            <p className="text-sm text-ink-muted">None yet.</p>
           )}
         </section>
       ))}

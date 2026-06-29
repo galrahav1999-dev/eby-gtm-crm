@@ -30,7 +30,7 @@ export function DealForm({
     <form action={action} className="space-y-5">
       {/* Basics */}
       <section className="card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-white">Basics</h2>
+        <h2 className="mb-4 text-sm font-semibold text-ink">Basics</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <TextField name="name" label="Deal name" defaultValue={deal?.name} required placeholder="e.g. Hartman - K8 spoken Hebrew pilot" />
           <RecordSelect name="org_id" label="Organization" records={orgs} defaultValue={deal?.org_id} />
@@ -42,8 +42,8 @@ export function DealForm({
 
       {/* The three buyer roles */}
       <section className="card p-5">
-        <h2 className="mb-1 text-sm font-semibold text-white">Who's who</h2>
-        <p className="mb-4 text-xs text-slate-500">Can be the same person or different people.</p>
+        <h2 className="mb-1 text-sm font-semibold text-ink">Who's who</h2>
+        <p className="mb-4 text-xs text-ink-muted">Can be the same person or different people.</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <RecordSelect name="economic_buyer_id" label="Economic buyer" records={people} defaultValue={deal?.economic_buyer_id} hint="Controls budget, signs." />
           <RecordSelect name="poc_id" label="Point of contact" records={people} defaultValue={deal?.poc_id} hint="Day-to-day coordinator." />
@@ -53,7 +53,7 @@ export function DealForm({
 
       {/* Qualification, in their words */}
       <section className="card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-white">Qualification (Mom Test)</h2>
+        <h2 className="mb-4 text-sm font-semibold text-ink">Qualification (Mom Test)</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SelectField name="has_hebrew" label="Has a Hebrew program today?" options={options.yes_no_unknown ?? []} defaultValue={deal?.has_hebrew} />
           <TextField name="current_solution" label="Current solution / curriculum" defaultValue={deal?.current_solution} />
@@ -71,7 +71,7 @@ export function DealForm({
 
       {/* Commercials + follow-up */}
       <section className="card p-5">
-        <h2 className="mb-4 text-sm font-semibold text-white">Commercials & follow-up</h2>
+        <h2 className="mb-4 text-sm font-semibold text-ink">Commercials & follow-up</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <NumberField name="seats" label="Seats (qty)" defaultValue={deal?.seats} />
           <NumberField name="acv" label="ACV / expected value" defaultValue={deal?.acv} placeholder="e.g. 36000" />
@@ -84,8 +84,8 @@ export function DealForm({
 
       {/* Close reasons */}
       <section className="card p-5">
-        <h2 className="mb-1 text-sm font-semibold text-white">If closed</h2>
-        <p className="mb-4 text-xs text-slate-500">Fill the matching reason only when the deal is won or lost.</p>
+        <h2 className="mb-1 text-sm font-semibold text-ink">If closed</h2>
+        <p className="mb-4 text-xs text-ink-muted">Fill the matching reason only when the deal is won or lost.</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <SelectField name="closed_won_reason" label="Closed-won reason" options={options.closed_won_reason ?? []} defaultValue={deal?.closed_won_reason} />
           <SelectField name="closed_lost_reason" label="Closed-lost reason" options={options.closed_lost_reason ?? []} defaultValue={deal?.closed_lost_reason} />

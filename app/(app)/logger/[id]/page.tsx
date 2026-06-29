@@ -27,14 +27,14 @@ function RecordCard({
 }) {
   const fields = Object.entries(record).filter(([, v]) => v != null && String(v).trim() !== "");
   return (
-    <label className="flex cursor-pointer gap-3 border-b border-white/5 px-4 py-3 last:border-0">
+    <label className="flex cursor-pointer gap-3 border-b border-line-soft px-4 py-3 last:border-0">
       <input type="checkbox" name={`${prefix}_${index}`} defaultChecked className="mt-1 accent-indigo-500" />
       <div className="min-w-0 flex-1">
         <dl className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
           {fields.map(([k, v]) => (
             <div key={k} className="flex gap-2 text-sm">
-              <dt className="shrink-0 text-slate-500">{k.replace(/_/g, " ")}:</dt>
-              <dd className="min-w-0 text-slate-200">{String(v)}</dd>
+              <dt className="shrink-0 text-ink-muted">{k.replace(/_/g, " ")}:</dt>
+              <dd className="min-w-0 text-ink-soft">{String(v)}</dd>
             </div>
           ))}
         </dl>
@@ -77,8 +77,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           <div className="flex flex-wrap gap-4">
             {counts.map(([k, n]) => (
               <div key={k} className="text-center">
-                <div className="text-2xl font-semibold text-white">{n as number}</div>
-                <div className="text-xs text-slate-500">{k}</div>
+                <div className="text-2xl font-semibold text-ink">{n as number}</div>
+                <div className="text-xs text-ink-muted">{k}</div>
               </div>
             ))}
           </div>
@@ -107,7 +107,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
       </PageHeader>
 
       {total === 0 ? (
-        <div className="card px-6 py-12 text-center text-sm text-slate-400">
+        <div className="card px-6 py-12 text-center text-sm text-ink-muted">
           The AI did not find any records to create from this text.
         </div>
       ) : (
@@ -115,8 +115,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
           {sections.map((s) =>
             s.items.length > 0 ? (
               <div key={s.key}>
-                <h2 className="mb-2 text-sm font-semibold text-white">
-                  {FRIENDLY[s.key]} <span className="text-slate-500">({s.items.length})</span>
+                <h2 className="mb-2 text-sm font-semibold text-ink">
+                  {FRIENDLY[s.key]} <span className="text-ink-muted">({s.items.length})</span>
                 </h2>
                 <div className="card overflow-hidden">
                   {s.items.map((rec, i) => (
@@ -129,8 +129,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
           {proposal.to_chase_next?.length > 0 && (
             <div className="card p-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">To chase next</h3>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-slate-300">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">To chase next</h3>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-ink-soft">
                 {proposal.to_chase_next.map((t, i) => (
                   <li key={i}>{t}</li>
                 ))}
@@ -147,8 +147,8 @@ export default async function ReviewPage({ params }: { params: { id: string } })
 
       {ing.transcript && (
         <details className="mt-8">
-          <summary className="cursor-pointer text-xs text-slate-500">Show source text</summary>
-          <pre className="mt-2 whitespace-pre-wrap rounded-lg border border-white/5 bg-ink-900/60 p-4 text-xs text-slate-400">{ing.transcript}</pre>
+          <summary className="cursor-pointer text-xs text-ink-muted">Show source text</summary>
+          <pre className="mt-2 whitespace-pre-wrap rounded-lg border border-line-soft bg-surface p-4 text-xs text-ink-muted">{ing.transcript}</pre>
         </details>
       )}
     </div>

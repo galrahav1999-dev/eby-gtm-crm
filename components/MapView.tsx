@@ -101,8 +101,8 @@ export default function MapView() {
   return (
     <div className="flex h-full flex-col">
       {/* Filter toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 bg-ink-900/70 px-3 py-2.5 backdrop-blur sm:px-4">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">Filters</span>
+      <div className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-surface px-3 py-2.5 backdrop-blur sm:px-4">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Filters</span>
         <FilterControls />
       </div>
 
@@ -112,7 +112,7 @@ export default function MapView() {
         {/* Rep legend */}
         <div className="pointer-events-none absolute left-3 top-3 z-10 flex flex-wrap gap-x-3 gap-y-1 rounded-xl glass px-3 py-2 shadow-card">
           {REPS.map((r) => (
-            <span key={r} className="flex items-center gap-1.5 text-[11px] text-slate-200">
+            <span key={r} className="flex items-center gap-1.5 text-[11px] text-ink-soft">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: REP_COLORS[r], boxShadow: `0 0 6px ${REP_COLORS[r]}` }} />
               {r.split(" ")[0]}
             </span>

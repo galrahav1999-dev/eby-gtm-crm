@@ -27,7 +27,7 @@ export function RepAvatar({ rep, size = 22 }: { rep: string; size?: number }) {
   return (
     <span
       title={rep}
-      className="inline-flex items-center justify-center rounded-full font-semibold text-white ring-1 ring-white/10"
+      className="inline-flex items-center justify-center rounded-full font-semibold text-ink ring-1 ring-line"
       style={{
         width: size,
         height: size,

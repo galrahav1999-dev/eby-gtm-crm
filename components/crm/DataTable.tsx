@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge, IdTag } from "./ui";
 import { fmtDate, isOverdue } from "@/lib/format";
+import { labelColor } from "@/lib/colors";
 
 export type ColumnKind = "text" | "strong" | "badge" | "owner" | "id" | "date" | "nextdate";
 
@@ -12,10 +13,28 @@ export interface Column {
   header: string;
   kind?: ColumnKind;
 }
-
 export interface DataRow {
   id: string;
   [key: string]: unknown;
+}
+
+function initials(name: string): string {
+  const parts = name.replace(/[()]/g, "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
+
+function Avatar({ name }: { name: string }) {
+  const empty = !name || name === "(no name)";
+  const c = empty ? "#94a3b8" : labelColor(name);
+  return (
+    <span
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white ring-1 ring-black/5"
+      style={{ background: `linear-gradient(140deg, ${c}, ${c}b3)` }}
+    >
+      {empty ? "·" : initials(name)}
+    </span>
+  );
 }
 
 export function DataTable({
@@ -38,9 +57,7 @@ export function DataTable({
     let r = rows;
     if (q.trim()) {
       const needle = q.toLowerCase();
-      r = r.filter((row) =>
-        columns.some((c) => String(row[c.key] ?? "").toLowerCase().includes(needle))
-      );
+      r = r.filter((row) => columns.some((c) => String(row[c.key] ?? "").toLowerCase().includes(needle)));
     }
     if (sortKey) {
       r = [...r].sort((a, b) => {
@@ -54,38 +71,41 @@ export function DataTable({
 
   function toggleSort(key: string) {
     if (sortKey === key) setAsc(!asc);
-    else {
-      setSortKey(key);
-      setAsc(true);
-    }
+    else { setSortKey(key); setAsc(true); }
   }
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="w-full max-w-xs rounded-lg border border-white/10 bg-ink-800/80 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/20"
-        />
-        <span className="shrink-0 text-xs text-slate-500">
+      <div className="flex items-center justify-between gap-3 border-b border-line-soft px-4 py-3">
+        <div className="relative w-full max-w-sm">
+          <svg viewBox="0 0 24 24" fill="none" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
+            <path d="m20 20-3-3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          </svg>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="w-full rounded-xl border border-line bg-surface-muted py-2 pl-9 pr-3 text-sm text-ink outline-none transition placeholder:text-ink-muted focus:border-primary focus:bg-card focus:ring-2 focus:ring-primary"
+          />
+        </div>
+        <span className="shrink-0 rounded-full bg-surface-muted px-2.5 py-1 text-xs font-medium text-ink-muted">
           {filtered.length} of {rows.length}
         </span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-white/5 text-slate-400">
+          <thead className="sticky top-0 z-10 bg-card">
+            <tr className="border-b border-line text-ink-muted">
               {columns.map((c) => (
                 <th
                   key={c.key}
                   onClick={() => toggleSort(c.key)}
-                  className="cursor-pointer select-none whitespace-nowrap px-4 py-2.5 text-xs font-semibold uppercase tracking-wider hover:text-slate-200"
+                  className="cursor-pointer select-none whitespace-nowrap px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition hover:text-ink"
                 >
                   {c.header}
-                  {sortKey === c.key && <span className="ml-1">{asc ? "↑" : "↓"}</span>}
+                  {sortKey === c.key && <span className="ml-1 text-primary">{asc ? "↑" : "↓"}</span>}
                 </th>
               ))}
             </tr>
@@ -95,10 +115,10 @@ export function DataTable({
               <tr
                 key={row.id}
                 onClick={() => router.push(`${basePath}/${row.id}`)}
-                className="cursor-pointer border-b border-white/5 transition hover:bg-white/[0.03]"
+                className="group cursor-pointer border-b border-line-soft transition last:border-0 hover:bg-surface-muted"
               >
                 {columns.map((c) => (
-                  <td key={c.key} className="whitespace-nowrap px-4 py-3">
+                  <td key={c.key} className="whitespace-nowrap px-4 py-3.5">
                     <Cell value={row[c.key]} kind={c.kind} />
                   </td>
                 ))}
@@ -106,7 +126,7 @@ export function DataTable({
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center text-slate-500">
+                <td colSpan={columns.length} className="px-4 py-14 text-center text-ink-muted">
                   Nothing matches “{q}”.
                 </td>
               </tr>
@@ -120,10 +140,15 @@ export function DataTable({
 
 function Cell({ value, kind }: { value: unknown; kind?: ColumnKind }) {
   const s = value == null ? "" : String(value);
-  if (!s && kind !== "text") return <span className="text-slate-600">—</span>;
+  if (!s && kind !== "text" && kind !== "strong") return <span className="text-ink-muted">—</span>;
   switch (kind) {
     case "strong":
-      return <span className="font-medium text-white">{s || "—"}</span>;
+      return (
+        <span className="flex items-center gap-2.5">
+          <Avatar name={s} />
+          <span className="font-medium text-ink group-hover:text-primary">{s || "—"}</span>
+        </span>
+      );
     case "id":
       return <IdTag id={s} />;
     case "badge":
@@ -131,15 +156,15 @@ function Cell({ value, kind }: { value: unknown; kind?: ColumnKind }) {
     case "owner":
       return <Badge value={s} kind="owner" />;
     case "date":
-      return <span className="text-slate-300">{fmtDate(s)}</span>;
+      return <span className="text-ink-soft">{fmtDate(s)}</span>;
     case "nextdate":
       return (
-        <span className={isOverdue(s) ? "font-medium text-rose-300" : "text-slate-300"}>
+        <span className={isOverdue(s) ? "font-medium text-danger" : "text-ink-soft"}>
           {fmtDate(s)}
           {isOverdue(s) && <span className="ml-1 text-xs">(due)</span>}
         </span>
       );
     default:
-      return <span className="text-slate-300">{s}</span>;
+      return <span className="text-ink-soft">{s}</span>;
   }
 }

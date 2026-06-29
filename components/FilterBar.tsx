@@ -20,7 +20,7 @@ export default function FilterBar() {
 
       {/* Rep filter — doubles as the rep color key */}
       <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 self-start rounded-xl glass p-1.5 shadow-card">
-        <span className="px-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <span className="px-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">
           Book
         </span>
         <RepPill active={repFilter === "all"} onClick={() => setRepFilter("all")} dot="#94a3b8">
@@ -40,14 +40,14 @@ export default function FilterBar() {
           </RepPill>
         ))}
 
-        <span className="mx-0.5 h-5 w-px bg-white/10" />
+        <span className="mx-0.5 h-5 w-px bg-surface-muted" />
 
         <button
           onClick={toggleOverlapsOnly}
           className={`chip transition-all ${
             overlapsOnly
               ? "bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/40"
-              : "text-slate-400 hover:bg-white/5"
+              : "text-ink-muted hover:bg-surface-muted"
           }`}
           title="Show only accounts worked by more than one rep"
         >
@@ -91,7 +91,7 @@ function LocationNav() {
       {drill !== "globe" ? (
         <button
           onClick={drillUp}
-          className="grid h-8 w-8 place-items-center rounded-lg text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+          className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition-colors hover:bg-surface-muted hover:text-ink"
           aria-label="Back"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
@@ -99,7 +99,7 @@ function LocationNav() {
           </svg>
         </button>
       ) : (
-        <span className="grid h-8 w-8 place-items-center text-accent-soft">
+        <span className="grid h-8 w-8 place-items-center text-primary">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
             <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.5" />
             <path d="M3.5 12h17M12 3.5c2.4 2.3 2.4 14.7 0 17M12 3.5c-2.4 2.3-2.4 14.7 0 17" stroke="currentColor" strokeWidth="1.3" />
@@ -107,10 +107,10 @@ function LocationNav() {
         </span>
       )}
       <div className="leading-tight">
-        <div className="max-w-[200px] truncate text-sm font-semibold tracking-tight text-white">
+        <div className="max-w-[200px] truncate text-sm font-semibold tracking-tight text-ink">
           {title}
         </div>
-        {sub && <div className="text-[11px] text-slate-500">{sub}</div>}
+        {sub && <div className="text-[11px] text-ink-muted">{sub}</div>}
       </div>
     </div>
   );
@@ -131,7 +131,7 @@ function RepPill({
     <button
       onClick={onClick}
       className={`chip transition-all ${
-        active ? "bg-white/10 text-white ring-1 ring-white/15" : "text-slate-400 hover:bg-white/5"
+        active ? "bg-surface-muted text-ink ring-1 ring-line" : "text-ink-muted hover:bg-surface-muted"
       }`}
     >
       {typeof children === "string" && (

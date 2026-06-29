@@ -6,7 +6,7 @@ import type { FieldDef } from "@/lib/schema/types";
 import type { OptionsMap } from "@/lib/options";
 
 const fieldBase =
-  "w-full rounded-lg border border-white/10 bg-ink-800/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/20";
+  "w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-ink-muted outline-none focus:border-primary focus:ring-2 focus:ring-primary";
 
 interface Rec {
   id: string;
@@ -84,7 +84,7 @@ export function RecordPicker({
 
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-slate-300">
+      <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-ink-soft">
         {label}
         <HelpTip text={help} />
       </span>
@@ -106,15 +106,15 @@ export function RecordPicker({
         />
         {open && (
           <div
-            className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-white/10 bg-ink-850 shadow-card"
+            className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-line bg-card shadow-card"
             onMouseDown={() => blurTimer.current && clearTimeout(blurTimer.current)}
           >
             {filtered.slice(0, 100).map((r) => (
-              <button key={r.id} type="button" onClick={() => choose(r)} className="block w-full px-3 py-1.5 text-left text-sm text-slate-200 hover:bg-white/5">
+              <button key={r.id} type="button" onClick={() => choose(r)} className="block w-full px-3 py-1.5 text-left text-sm text-ink-soft hover:bg-surface-muted">
                 {r.label}
               </button>
             ))}
-            {filtered.length === 0 && <div className="px-3 py-2 text-sm text-slate-500">No matches.</div>}
+            {filtered.length === 0 && <div className="px-3 py-2 text-sm text-ink-muted">No matches.</div>}
             {inlineCreate && (
               <button
                 type="button"
@@ -122,7 +122,7 @@ export function RecordPicker({
                   setOpen(false);
                   setModal(true);
                 }}
-                className="block w-full border-t border-white/5 px-3 py-2 text-left text-sm text-accent-soft hover:bg-white/5"
+                className="block w-full border-t border-line-soft px-3 py-2 text-left text-sm text-primary hover:bg-surface-muted"
               >
                 + Create new {targetSingular.toLowerCase()}{query ? ` “${query}”` : ""}
               </button>
@@ -134,7 +134,7 @@ export function RecordPicker({
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onMouseDown={() => setModal(false)}>
           <div className="card w-full max-w-md p-5" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="mb-3 text-sm font-semibold text-white">New {targetSingular.toLowerCase()}</h3>
+            <h3 className="mb-3 text-sm font-semibold text-ink">New {targetSingular.toLowerCase()}</h3>
             {err && <p className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">{err}</p>}
             <form
               onSubmit={(e) => {

@@ -26,7 +26,7 @@ export function DeleteButton({
   }
   return (
     <form action={action} className="flex items-center gap-2">
-      <span className="text-xs text-slate-400">{confirmText}</span>
+      <span className="text-xs text-ink-muted">{confirmText}</span>
       <button type="submit" className="btn-danger">
         Yes, delete
       </button>

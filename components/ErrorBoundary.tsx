@@ -23,17 +23,17 @@ export default class ErrorBoundary extends React.Component<
   render() {
     if (this.state.error) {
       return (
-        <div className="grid h-full w-full place-items-center bg-ink-950 p-6">
+        <div className="grid h-full w-full place-items-center bg-surface p-6">
           <div className="card max-w-md p-6 text-center">
             <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-amber-400/15 text-amber-300">
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
                 <path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h3 className="text-base font-semibold text-white">This view hit a snag</h3>
-            <p className="mt-2 text-sm text-slate-400">It’s only this panel — your data and the rest of the app are fine.</p>
+            <h3 className="text-base font-semibold text-ink">This view hit a snag</h3>
+            <p className="mt-2 text-sm text-ink-muted">It’s only this panel — your data and the rest of the app are fine.</p>
             {this.state.error?.message && (
-              <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-ink-900/80 p-2 text-left text-[11px] text-rose-300 ring-1 ring-white/5">
+              <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-surface p-2 text-left text-[11px] text-rose-300 ring-1 ring-line">
                 {this.state.error.message}
                 {this.state.error.stack ? "\n\n" + this.state.error.stack.split("\n").slice(1, 4).join("\n") : ""}
               </pre>

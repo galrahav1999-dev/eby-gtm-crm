@@ -43,18 +43,16 @@ export default function LoginPage() {
   }
 
   const field =
-    "w-full rounded-lg border border-white/10 bg-ink-800/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/20";
+    "w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-ink-muted outline-none focus:border-primary focus:ring-2 focus:ring-primary";
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="card w-full max-w-sm p-7">
         <div className="mb-6 flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/20 text-base font-bold text-accent-glow ring-1 ring-accent/30">
-            ע
-          </div>
+          <div className="logo-tile h-10 w-10 text-lg">א</div>
           <div>
-            <div className="text-base font-semibold text-white">EBY GTM</div>
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">Team sign-in</div>
+            <div className="text-base font-semibold tracking-[0.14em] text-ink">EBY</div>
+            <div className="text-[10px] uppercase tracking-wider text-ink-muted">Team sign-in</div>
           </div>
         </div>
 
@@ -65,7 +63,7 @@ export default function LoginPage() {
         )}
 
         {sent ? (
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-ink-soft">
             Check your email for a sign-in link.
           </p>
         ) : (
@@ -99,7 +97,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setMode(mode === "password" ? "magic" : "password")}
-              className="w-full text-center text-xs text-slate-500 hover:text-slate-300"
+              className="w-full text-center text-xs text-ink-muted hover:text-ink-soft"
             >
               {mode === "password" ? "Use a magic link instead" : "Use a password instead"}
             </button>

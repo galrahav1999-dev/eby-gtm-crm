@@ -229,13 +229,13 @@ export default function GlobeView() {
       {drill !== "globe" && (
         <button
           onClick={drillUp}
-          className="pointer-events-auto absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink-850/85 px-4 py-2 text-sm font-medium text-white shadow-card ring-1 ring-white/10 backdrop-blur-md transition-all hover:bg-ink-800 hover:ring-white/20"
+          className="pointer-events-auto absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium text-ink shadow-card ring-1 ring-line backdrop-blur-md transition-all hover:bg-card hover:ring-line"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
             <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           Back to {backLabel}
-          <kbd className="ml-1 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-slate-300">Esc</kbd>
+          <kbd className="ml-1 rounded bg-surface-muted px-1.5 py-0.5 text-[10px] text-ink-soft">Esc</kbd>
         </button>
       )}
 
@@ -330,14 +330,14 @@ export default function GlobeView() {
       />
 
       {drill === "globe" && hoverPoly && (
-        <div className="pointer-events-none absolute bottom-20 left-1/2 -translate-x-1/2 rounded-full bg-ink-900/80 px-4 py-1.5 text-sm font-medium text-white shadow-card backdrop-blur-md">
+        <div className="pointer-events-none absolute bottom-20 left-1/2 -translate-x-1/2 rounded-full bg-surface px-4 py-1.5 text-sm font-medium text-ink shadow-card backdrop-blur-md">
           {hoverPoly.properties.name}
           {(() => {
             const c = POLY_NAME_TO_COUNTRY[hoverPoly.properties.name];
             return c && dealCountries.has(c) ? (
-              <span className="ml-2 text-accent-glow">· click to zoom in</span>
+              <span className="ml-2 text-primary">· click to zoom in</span>
             ) : (
-              <span className="ml-2 text-slate-500">· no accounts</span>
+              <span className="ml-2 text-ink-muted">· no accounts</span>
             );
           })()}
         </div>
@@ -375,12 +375,12 @@ function territoryLabel(d: any, dealCountries: Set<string>): string {
 function RepLegend({ subtitle }: { subtitle?: string }) {
   return (
     <div className="pointer-events-none absolute bottom-4 right-4 rounded-xl glass px-3 py-2.5 shadow-card">
-      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-        Reps {subtitle && <span className="ml-1 normal-case tracking-normal text-slate-500">· {subtitle}</span>}
+      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">
+        Reps {subtitle && <span className="ml-1 normal-case tracking-normal text-ink-muted">· {subtitle}</span>}
       </div>
       <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 sm:gap-x-4">
         {REPS.map((r) => (
-          <span key={r} className="flex items-center gap-1.5 text-[11px] text-slate-200">
+          <span key={r} className="flex items-center gap-1.5 text-[11px] text-ink-soft">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: REP_COLORS[r], boxShadow: `0 0 6px ${REP_COLORS[r]}` }} />
             {r.split(" ")[0]}
           </span>

@@ -24,22 +24,22 @@ export default function MetricsPanel() {
         }`}
       />
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-r border-white/10 bg-ink-900/95 backdrop-blur-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed left-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-r border-line bg-surface backdrop-blur-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-start gap-3 border-b border-white/5 p-4">
+        <div className="flex items-start gap-3 border-b border-line-soft p-4">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent to-sky-500 shadow-glow">
-            <ChartIcon className="h-5 w-5 text-white" />
+            <ChartIcon className="h-5 w-5 text-ink" />
           </div>
           <div className="flex-1">
-            <h2 className="text-base font-semibold text-white">Team metrics</h2>
-            <p className="text-xs text-slate-400">Live against quarterly &amp; yearly targets</p>
+            <h2 className="text-base font-semibold text-ink">Team metrics</h2>
+            <p className="text-xs text-ink-muted">Live against quarterly &amp; yearly targets</p>
           </div>
           <button
             onClick={() => toggle(false)}
-            className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 hover:bg-white/5 hover:text-white"
+            className="grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink"
             aria-label="Close"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
@@ -88,18 +88,18 @@ export default function MetricsPanel() {
 
 function ScopeChip({ rep, territory }: { rep: string; territory: string }) {
   return (
-    <div className="flex items-center gap-2 border-b border-white/5 bg-accent/5 px-4 py-3">
-      <span className="text-[11px] font-medium text-slate-400">Showing</span>
+    <div className="flex items-center gap-2 border-b border-line-soft bg-primary-soft px-4 py-3">
+      <span className="text-[11px] font-medium text-ink-muted">Showing</span>
       {rep === "all" ? (
-        <span className="chip bg-white/10 text-white ring-1 ring-white/15">
+        <span className="chip bg-surface-muted text-ink ring-1 ring-line">
           <span className="h-1.5 w-1.5 rounded-full bg-slate-300" /> Whole team
         </span>
       ) : (
-        <span className="chip bg-white/10 text-white ring-1 ring-white/15">
+        <span className="chip bg-surface-muted text-ink ring-1 ring-line">
           <RepAvatar rep={rep} size={16} /> {rep}
         </span>
       )}
-      <span className="chip bg-ink-800 text-slate-300 ring-1 ring-white/5">
+      <span className="chip bg-card text-ink-soft ring-1 ring-line">
         {territory === "all" ? "All territories" : territory}
       </span>
     </div>
@@ -107,9 +107,9 @@ function ScopeChip({ rep, territory }: { rep: string; territory: string }) {
 }
 
 function Kpi({ label, value, tone = "default" }: { label: string; value: string | number; tone?: "default" | "green" | "sky" }) {
-  const color = tone === "green" ? "text-emerald-400" : tone === "sky" ? "text-sky-400" : "text-white";
+  const color = tone === "green" ? "text-emerald-400" : tone === "sky" ? "text-sky-400" : "text-ink";
   return (
-    <div className="rounded-xl border border-white/5 bg-ink-850/70 p-3">
+    <div className="rounded-xl border border-line-soft bg-card p-3">
       <div className="label-eyebrow">{label}</div>
       <div className={`mt-1 text-xl font-semibold tabular-nums ${color}`}>{value}</div>
     </div>
@@ -119,7 +119,7 @@ function Kpi({ label, value, tone = "default" }: { label: string; value: string 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{title}</div>
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">{title}</div>
       {children}
     </div>
   );
@@ -129,7 +129,7 @@ function StatusBar({ open, won, lost }: { open: number; won: number; lost: numbe
   const total = Math.max(1, open + won + lost);
   const seg = (n: number, c: string, label: string) =>
     n > 0 ? (
-      <div className="flex items-center justify-center text-[10px] font-semibold text-white/90" style={{ width: `${(n / total) * 100}%`, background: c }} title={`${label}: ${n}`}>
+      <div className="flex items-center justify-center text-[10px] font-semibold text-ink/90" style={{ width: `${(n / total) * 100}%`, background: c }} title={`${label}: ${n}`}>
         {n}
       </div>
     ) : null;
@@ -140,7 +140,7 @@ function StatusBar({ open, won, lost }: { open: number; won: number; lost: numbe
         {seg(won, "#22c55e", "Won")}
         {seg(lost, "#ef4444", "Lost")}
       </div>
-      <div className="mt-1.5 flex gap-4 text-[11px] text-slate-400">
+      <div className="mt-1.5 flex gap-4 text-[11px] text-ink-muted">
         <Legend c="#38bdf8" label={`Open ${open}`} />
         <Legend c="#22c55e" label={`Won ${won}`} />
         <Legend c="#ef4444" label={`Lost ${lost}`} />
@@ -155,12 +155,12 @@ function Quota({ label, actual, target, pct }: { label: string; actual: number; 
   return (
     <div>
       <div className="mb-1 flex items-baseline justify-between">
-        <span className="text-sm font-medium text-slate-200">{label}</span>
-        <span className={`text-xs font-semibold tabular-nums ${hit ? "text-emerald-400" : "text-slate-300"}`}>
+        <span className="text-sm font-medium text-ink-soft">{label}</span>
+        <span className={`text-xs font-semibold tabular-nums ${hit ? "text-emerald-400" : "text-ink-soft"}`}>
           {Math.round(pct * 100)}%
         </span>
       </div>
-      <div className="relative h-2.5 overflow-hidden rounded-full bg-ink-700">
+      <div className="relative h-2.5 overflow-hidden rounded-full bg-card">
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{
@@ -169,8 +169,8 @@ function Quota({ label, actual, target, pct }: { label: string; actual: number; 
           }}
         />
       </div>
-      <div className="mt-1 text-[11px] text-slate-500 tabular-nums">
-        {fmtMoney(actual)} <span className="text-slate-600">of</span> {fmtMoney(target)}
+      <div className="mt-1 text-[11px] text-ink-muted tabular-nums">
+        {fmtMoney(actual)} <span className="text-ink-muted">of</span> {fmtMoney(target)}
       </div>
     </div>
   );
@@ -179,11 +179,11 @@ function Quota({ label, actual, target, pct }: { label: string; actual: number; 
 function StageRow({ stage, count, max }: { stage: Stage; count: number; max: number }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-24 shrink-0 text-[11px] text-slate-400">{stage}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-700">
+      <span className="w-24 shrink-0 text-[11px] text-ink-muted">{stage}</span>
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-card">
         <div className="h-full rounded-full" style={{ width: `${(count / max) * 100}%`, background: STAGE_COLORS[stage] }} />
       </div>
-      <span className="w-5 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-300">{count}</span>
+      <span className="w-5 shrink-0 text-right text-[11px] font-semibold tabular-nums text-ink-soft">{count}</span>
     </div>
   );
 }
