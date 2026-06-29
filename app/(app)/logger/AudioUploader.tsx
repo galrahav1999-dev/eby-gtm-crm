@@ -7,6 +7,15 @@ import { createUploadTarget, parseAudioPaths } from "./actions";
 
 const MAX_FILES = 3;
 
+function Spinner({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={`animate-spin ${className}`} aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function fmtSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -86,6 +95,18 @@ export function AudioUploader({ sttOn }: { sttOn: boolean }) {
 
   const stageLabel =
     stage === "uploading" ? "Uploading…" : stage === "working" ? "Reading the conversation…" : "Extract records";
+
+  if (busy) {
+    return (
+      <div className="card flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+        <Spinner className="h-8 w-8 text-primary" />
+        <div className="text-sm font-medium text-ink">
+          {stage === "uploading" ? "Uploading your recordings…" : "Transcribing and reading the conversation…"}
+        </div>
+        <div className="text-xs text-ink-muted">This can take a moment for longer recordings. Please keep this tab open.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="card p-5">

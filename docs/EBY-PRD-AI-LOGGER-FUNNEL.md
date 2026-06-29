@@ -189,3 +189,16 @@ Capture            Review and edit                 Accept            Outcome
 - Manual smoke once live (founder): upload 1 to 3 files, edit a field and a
   dropdown, untick one record, accept, confirm the created rows and that the
   next-step links land on the right records and prefill the deal or pilot form.
+
+---
+
+## 10. Updates
+
+- 2026-06-29: Added an animated spinner / processing state while uploading and
+  while transcription plus extraction run (no more static text), and a spinner on
+  the Accept and save action.
+- 2026-06-29: Transcription and extraction keys are moving to per-user connected
+  keys (see EBY-PRD-AI-KEYS.md). The funnel's consistency guarantee holds: the
+  user's key only pays for the provider call; our prompt, schema, and all
+  post-extraction parsing and commit are ours and identical for everyone.
+
