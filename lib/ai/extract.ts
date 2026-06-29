@@ -169,10 +169,10 @@ export function buildSchema(o: OptionsMap) {
   };
 }
 
-/** Run extraction. Throws a clear error if the API key is missing. */
-export async function extractRecords(transcript: string, options: OptionsMap): Promise<Proposal> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set. Add it to enable the AI logger.");
+/** Run extraction. Throws a clear error if no API key is available. */
+export async function extractRecords(transcript: string, options: OptionsMap, key?: string | null): Promise<Proposal> {
+  const apiKey = key ?? process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("No extraction key. Connect your Anthropic key in Settings to enable the AI logger.");
   const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
   const client = new Anthropic({ apiKey });

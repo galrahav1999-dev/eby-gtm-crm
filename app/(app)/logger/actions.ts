@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAllOptions } from "@/lib/options";
 import { extractRecords } from "@/lib/ai/extract";
 import { transcribeAudio } from "@/lib/ai/transcribe";
+import { resolveKey } from "@/lib/ai/keys";
 import { commitProposal, type IncludeSets } from "@/lib/ai/commit";
 import type { Proposal } from "@/lib/ai/extract";
 import { logAudit } from "@/lib/audit";
@@ -14,7 +15,8 @@ async function runExtraction(ingestionId: string, transcript: string) {
   const supabase = createClient();
   try {
     const options = await getAllOptions();
-    const proposal = await extractRecords(transcript, options);
+    const anthropicKey = await resolveKey("anthropic");
+    const proposal = await extractRecords(transcript, options, anthropicKey);
     await supabase.from("ai_ingestions").update({ proposal, status: "proposed" }).eq("id", ingestionId);
   } catch (e) {
     await supabase
@@ -106,11 +108,12 @@ export async function parseAudioPaths(
   if (error) throw new Error(error.message);
 
   try {
+    const sttKey = paths.length ? await resolveKey("openai") : null;
     const parts: string[] = [];
     for (let i = 0; i < paths.length; i++) {
       const { data: blob, error: dlErr } = await supabase.storage.from("recordings").download(paths[i]);
       if (dlErr || !blob) throw new Error(dlErr?.message || "Could not read an uploaded recording.");
-      const t = await transcribeAudio(blob, filenames[i] || `audio-${i + 1}`);
+      const t = await transcribeAudio(blob, filenames[i] || `audio-${i + 1}`, sttKey);
       parts.push(paths.length > 1 ? `# Recording ${i + 1}: ${filenames[i] ?? ""}\n${t}` : t);
     }
     const pasted = (pastedText ?? "").trim();
