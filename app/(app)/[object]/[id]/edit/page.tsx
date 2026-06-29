@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getObjectDef } from "@/lib/schema/registry";
 import { getFormBundle } from "@/lib/record-data";
@@ -11,6 +11,8 @@ export const dynamic = "force-dynamic";
 export default async function EditRecordPage({ params }: { params: { object: string; id: string } }) {
   const def = getObjectDef(params.object);
   if (!def) notFound();
+  // Append-only objects (interactions) are never edited; corrections append.
+  if (def.appendOnly) redirect(`/${def.key}/${params.id}`);
   const supabase = createClient();
   const { data: record } = await supabase.from(def.table).select("*").eq("id", params.id).single();
   if (!record) notFound();
