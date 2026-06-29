@@ -34,7 +34,7 @@ function FieldInput({
     case "money":
       return <NumberField {...common} defaultValue={value} placeholder={field.placeholder} />;
     case "date":
-      return <DateField {...common} defaultValue={value} />;
+      return <DateField {...common} defaultValue={value ?? (field.defaultToday ? new Date().toISOString().slice(0, 10) : undefined)} />;
     case "select":
       return <SelectField {...common} options={field.optionsKey ? options[field.optionsKey] ?? [] : []} defaultValue={value} />;
     case "combobox":
