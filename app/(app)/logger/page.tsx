@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Badge } from "@/components/crm/ui";
-import { SubmitButton } from "@/components/crm/form";
-import { parseText } from "./actions";
 import { AudioUploader } from "./AudioUploader";
 
 export const dynamic = "force-dynamic";
-// Transcribing a long recording can take a while; allow a longer function run.
+// Transcribing several recordings can take a while; allow a longer function run.
 export const maxDuration = 300;
 
 export default async function LoggerPage() {
@@ -24,36 +22,17 @@ export default async function LoggerPage() {
     <div>
       <PageHeader
         title="AI logger"
-        subtitle="Paste call notes or a transcript, or upload a recording. The AI drafts clean records mapped to your dropdowns. You review before anything is saved."
+        subtitle="Capture a call as audio or notes. The AI drafts records mapped to your fields, you review and edit every field, then accept. Nothing is saved until you do."
       />
 
       {!aiOn && (
-        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
           The AI logger is off until <span className="font-mono">ANTHROPIC_API_KEY</span> is set. You can still see past runs below.
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {/* Paste text */}
-        <form action={parseText} className="card p-5">
-          <h2 className="mb-1 text-sm font-semibold text-ink">Paste notes or transcript</h2>
-          <p className="mb-3 text-xs text-ink-muted">Rough notes or a full speech-to-text transcript both work.</p>
-          <textarea
-            name="transcript"
-            rows={10}
-            placeholder="Paste the conversation here…"
-            className="w-full rounded-lg border border-line bg-card px-3 py-2 text-sm text-ink placeholder:text-ink-muted outline-none focus:border-primary focus:ring-2 focus:ring-primary"
-          />
-          <div className="mt-3">
-            <SubmitButton label="Extract records" />
-          </div>
-        </form>
+      <AudioUploader sttOn={sttOn} />
 
-        {/* Upload audio (direct-to-storage, no size limit) */}
-        <AudioUploader sttOn={sttOn} />
-      </div>
-
-      {/* Recent runs */}
       <section className="mt-8">
         <h2 className="mb-3 text-sm font-semibold text-ink">Recent runs</h2>
         {recent && recent.length > 0 ? (
