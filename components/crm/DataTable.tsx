@@ -146,7 +146,7 @@ function Cell({ value, kind }: { value: unknown; kind?: ColumnKind }) {
       return (
         <span className="flex items-center gap-2.5">
           <Avatar name={s} />
-          <span className="font-medium text-ink group-hover:text-primary">{s || "—"}</span>
+          <span className="max-w-[200px] truncate font-medium text-ink group-hover:text-primary" title={s}>{s || "—"}</span>
         </span>
       );
     case "id":
@@ -165,6 +165,6 @@ function Cell({ value, kind }: { value: unknown; kind?: ColumnKind }) {
         </span>
       );
     default:
-      return <span className="text-ink-soft">{s}</span>;
+      return <span className="block max-w-[260px] truncate text-ink-soft" title={s}>{s}</span>;
   }
 }
