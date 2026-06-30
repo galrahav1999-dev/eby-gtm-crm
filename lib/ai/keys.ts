@@ -21,6 +21,22 @@ export async function resolveKey(provider: Provider): Promise<string | null> {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
+    // Prefer the active key from the vault.
+    const { data: vault } = await supabase
+      .from("user_api_keys")
+      .select("key_cipher")
+      .eq("user_id", user.id)
+      .eq("provider", provider)
+      .eq("is_active", true)
+      .maybeSingle();
+    if ((vault as any)?.key_cipher) {
+      try {
+        return decryptSecret((vault as any).key_cipher);
+      } catch {
+        /* fall through */
+      }
+    }
+    // Legacy single-key fallback (pre-vault).
     const col = COL[provider];
     const { data } = await supabase.from("user_ai_settings").select(col).eq("user_id", user.id).maybeSingle();
     const cipher = (data as any)?.[col] as string | undefined;
