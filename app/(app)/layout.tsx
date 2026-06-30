@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/crm/Sidebar";
 import { Topbar } from "@/components/crm/Topbar";
+import { IdleLogout } from "@/components/crm/IdleLogout";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <IdleLogout />
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Topbar email={user?.email ?? null} />
