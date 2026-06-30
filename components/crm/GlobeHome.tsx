@@ -3,10 +3,35 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { feature } from "topojson-client";
 import { ownerColor, labelColor } from "@/lib/colors";
 import { OwnerAvatar } from "./ui";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
+
+// Map a world-atlas country shape (its `properties.name`) to the short country
+// value EBY records use, so we can tell which shapes have data behind them.
+const POLY_NAME_TO_EBY: Record<string, string> = {
+  "United States of America": "USA",
+  "United Kingdom": "UK",
+  France: "France",
+  Canada: "Canada",
+  Argentina: "Argentina",
+  Australia: "Australia",
+  Israel: "Israel",
+};
+
+// Country-shape colors, drawn from the beam palette (cyan rising to violet) so
+// the territories feel like part of the same illustration as the beams.
+const POLY = {
+  capHas: "rgba(56,189,248,0.12)", // faint cyan fill where we have records
+  capEmpty: "rgba(255,255,255,0.015)", // barely-there for empty countries
+  capHover: "rgba(124,108,250,0.55)", // vivid violet on hover (the beam terminus)
+  capLocked: "rgba(124,108,250,0.32)", // the currently opened territory
+  side: "rgba(120,160,255,0.10)",
+  stroke: "rgba(150,170,220,0.16)",
+  strokeHot: "rgba(56,189,248,0.95)", // bright cyan edge on hover/lock
+};
 
 export interface GlobePoint {
   id: string;
@@ -110,8 +135,25 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [beamsOn, setBeamsOn] = useState(true);
   const [bgMode, setBgMode] = useState<"auto" | "day" | "night">("auto");
   const [territory, setTerritory] = useState<string | null>(null);
+  const [polys, setPolys] = useState<any[]>([]);
+  const [hoverPoly, setHoverPoly] = useState<any>(null);
 
   useEffect(() => setPhase(currentPhase()), []);
+  // Load country shapes once, in the browser. The globe works without them, so
+  // a fetch failure just means no territory polygons (never a crash).
+  useEffect(() => {
+    let alive = true;
+    fetch("https://unpkg.com/world-atlas@2/countries-110m.json")
+      .then((r) => r.json())
+      .then((topo) => {
+        const fc: any = feature(topo, topo.objects.countries);
+        if (alive) setPolys(fc.features ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   useEffect(() => {
     if (!wrapRef.current) return;
     const ro = new ResizeObserver((e) => {
@@ -121,11 +163,12 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
   }, []);
-  // Gentle auto-rotation for a living feel.
+  // Gentle auto-rotation for a living feel; it locks once a territory is open so
+  // the chosen country stays put while you work its records.
   useEffect(() => {
     const g = globeRef.current;
     if (g && g.controls) {
-      g.controls().autoRotate = true;
+      g.controls().autoRotate = !territory;
       g.controls().autoRotateSpeed = 0.35;
       g.controls().enableZoom = true;
     }
@@ -195,16 +238,29 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
 
   const territoryData = useMemo(() => territories.find((t) => t.country === territory) ?? null, [territories, territory]);
 
+  // Which EBY countries currently have records on the globe (after filters), so
+  // a country shape can show whether it leads anywhere before you click it.
+  const dataCountrySet = useMemo(() => new Set(territories.map((t) => t.country)), [territories]);
+
   function openTerritory(country: string, lat: number, lng: number) {
     setTerritory(country);
     const g = globeRef.current;
     if (g && g.pointOfView) g.pointOfView({ lat, lng, altitude: 1.6 }, 800);
   }
 
+  // Open the funnel for a clicked country shape, flying to the centroid of its
+  // records. Shapes with no records are inert (nothing to open).
+  function openPolygon(poly: any) {
+    const eby = POLY_NAME_TO_EBY[poly?.properties?.name];
+    if (!eby) return;
+    const t = territories.find((x) => x.country === eby);
+    if (t) openTerritory(t.country, t.lat, t.lng);
+  }
+
   const active = fOwner !== "all" || fSegment !== "all" || fCountry !== "all" || fKind !== "all";
   const effPhase: Phase = bgMode === "auto" ? phase : bgMode;
   const ph = PHASE[effPhase];
-  const labelInk = effPhase === "day" || effPhase === "dawn" ? "rgba(12,19,32,0.92)" : "rgba(234,240,255,0.96)";
+  const hoverEby = hoverPoly ? POLY_NAME_TO_EBY[hoverPoly?.properties?.name] : null;
 
   return (
     <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden">
@@ -235,16 +291,31 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           pointRadius={0.6}
           pointLabel={(d: any) => `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d.label}</div>`}
           onPointClick={(d: any) => router.push(d.href)}
-          labelsData={territories}
-          labelLat="lat"
-          labelLng="lng"
-          labelText={(d: any) => `${d.country} (${d.n})`}
-          labelSize={1.05}
-          labelDotRadius={0.45}
-          labelColor={() => labelInk}
-          labelResolution={2}
-          labelLabel={(d: any) => `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d.country}: ${d.n} record${d.n === 1 ? "" : "s"} — click to open</div>`}
-          onLabelClick={(d: any) => openTerritory(d.country, d.lat, d.lng)}
+          polygonsData={polys}
+          polygonAltitude={(d: any) =>
+            d === hoverPoly ? 0.08 : POLY_NAME_TO_EBY[d?.properties?.name] === territory ? 0.05 : 0.01
+          }
+          polygonCapColor={(d: any) => {
+            const eby = POLY_NAME_TO_EBY[d?.properties?.name];
+            if (d === hoverPoly) return POLY.capHover;
+            if (eby && eby === territory) return POLY.capLocked;
+            if (eby && dataCountrySet.has(eby)) return POLY.capHas;
+            return POLY.capEmpty;
+          }}
+          polygonSideColor={() => POLY.side}
+          polygonStrokeColor={(d: any) => {
+            const eby = POLY_NAME_TO_EBY[d?.properties?.name];
+            return d === hoverPoly || (eby && eby === territory) ? POLY.strokeHot : POLY.stroke;
+          }}
+          polygonsTransitionDuration={240}
+          onPolygonHover={(p: any) => setHoverPoly(p || null)}
+          onPolygonClick={openPolygon}
+          polygonLabel={(d: any) => {
+            const eby = POLY_NAME_TO_EBY[d?.properties?.name];
+            const t = eby ? territories.find((x) => x.country === eby) : null;
+            const tail = t ? ` — ${t.n} record${t.n === 1 ? "" : "s"}, click to open` : " — no records here";
+            return `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d?.properties?.name ?? ""}${tail}</div>`;
+          }}
           arcsData={beams}
           arcStartLat="startLat"
           arcStartLng="startLng"
@@ -343,6 +414,20 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
                 New person here
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Country hover hint (mirrors the floating tooltip, steadier to read) */}
+      {hoverPoly && !territory && (
+        <div className="pointer-events-none absolute bottom-24 left-1/2 -translate-x-1/2">
+          <div className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm shadow-card">
+            <span className="font-medium text-ink">{hoverPoly?.properties?.name}</span>
+            {hoverEby && dataCountrySet.has(hoverEby) ? (
+              <span className="text-primary">click to open</span>
+            ) : (
+              <span className="text-ink-muted">no records here</span>
+            )}
           </div>
         </div>
       )}
