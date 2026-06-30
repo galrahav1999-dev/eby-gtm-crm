@@ -106,6 +106,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [fKind, setFKind] = useState<"all" | "org" | "person">("all");
   const [statsOpen, setStatsOpen] = useState(true);
   const [beamsOn, setBeamsOn] = useState(true);
+  const [territory, setTerritory] = useState<string | null>(null);
 
   useEffect(() => setPhase(currentPhase()), []);
   useEffect(() => {
@@ -173,8 +174,33 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
       }));
   }, [colored, beamsOn]);
 
+  // Territories: data-countries with a centroid and their records, for the
+  // hover label + lock-on-territory funnel.
+  const territories = useMemo(() => {
+    const m = new Map<string, { country: string; lat: number; lng: number; n: number; members: typeof colored }>();
+    for (const p of colored) {
+      if (!p.country) continue;
+      const e = m.get(p.country) ?? { country: p.country, lat: 0, lng: 0, n: 0, members: [] as typeof colored };
+      e.lat += p.lat;
+      e.lng += p.lng;
+      e.n += 1;
+      e.members.push(p);
+      m.set(p.country, e);
+    }
+    return [...m.values()].map((e) => ({ ...e, lat: e.lat / e.n, lng: e.lng / e.n }));
+  }, [colored]);
+
+  const territoryData = useMemo(() => territories.find((t) => t.country === territory) ?? null, [territories, territory]);
+
+  function openTerritory(country: string, lat: number, lng: number) {
+    setTerritory(country);
+    const g = globeRef.current;
+    if (g && g.pointOfView) g.pointOfView({ lat, lng, altitude: 1.6 }, 800);
+  }
+
   const active = fOwner !== "all" || fSegment !== "all" || fCountry !== "all" || fKind !== "all";
   const ph = PHASE[phase];
+  const labelInk = phase === "day" || phase === "dawn" ? "rgba(12,19,32,0.92)" : "rgba(234,240,255,0.96)";
 
   return (
     <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden">
@@ -205,6 +231,16 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           pointRadius={0.6}
           pointLabel={(d: any) => `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d.label}</div>`}
           onPointClick={(d: any) => router.push(d.href)}
+          labelsData={territories}
+          labelLat="lat"
+          labelLng="lng"
+          labelText={(d: any) => `${d.country} (${d.n})`}
+          labelSize={1.05}
+          labelDotRadius={0.45}
+          labelColor={() => labelInk}
+          labelResolution={2}
+          labelLabel={(d: any) => `<div style="font:600 12px/1.2 ui-sans-serif;padding:2px 4px">${d.country}: ${d.n} record${d.n === 1 ? "" : "s"} — click to open</div>`}
+          onLabelClick={(d: any) => openTerritory(d.country, d.lat, d.lng)}
           arcsData={beams}
           arcStartLat="startLat"
           arcStartLng="startLng"
@@ -267,6 +303,45 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           <button onClick={() => setStatsOpen(true)} className="btn-ghost bg-card text-xs">Snapshot</button>
         )}
       </div>
+
+      {/* Territory funnel: locked-on country with its records and actions */}
+      {territoryData && (
+        <div className="absolute left-6 top-28 w-72">
+          <div className="card animate-rise p-4">
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <div>
+                <div className="label-eyebrow">Territory</div>
+                <div className="text-base font-semibold text-ink">{territoryData.country}</div>
+                <div className="text-xs text-ink-muted">{territoryData.n} record{territoryData.n === 1 ? "" : "s"} here</div>
+              </div>
+              <button onClick={() => setTerritory(null)} className="text-xs text-ink-muted hover:text-ink">Close</button>
+            </div>
+
+            <div className="max-h-64 space-y-1 overflow-y-auto">
+              {territoryData.members.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => router.push(m.href)}
+                  className="flex w-full items-center gap-2 rounded-lg border border-line bg-surface-muted px-2.5 py-1.5 text-left text-sm transition hover:border-primary"
+                >
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: (m as any).color }} />
+                  <span className="min-w-0 flex-1 truncate text-ink">{m.name}</span>
+                  <span className="shrink-0 text-[10px] uppercase tracking-wide text-ink-muted">{m.kind}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button onClick={() => router.push(`/organizations/new?country=${encodeURIComponent(territoryData.country)}`)} className="btn-ghost text-xs">
+                New org here
+              </button>
+              <button onClick={() => router.push(`/people/new?country=${encodeURIComponent(territoryData.country)}`)} className="btn-ghost text-xs">
+                New person here
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Control dock */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
