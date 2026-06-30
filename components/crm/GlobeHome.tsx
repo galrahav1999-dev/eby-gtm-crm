@@ -33,9 +33,11 @@ interface Stats {
 type Phase = "dawn" | "day" | "dusk" | "night";
 function currentPhase(): Phase {
   const h = new Date().getHours();
-  if (h >= 5 && h < 8) return "dawn";
-  if (h >= 8 && h < 17) return "day";
-  if (h >= 17 && h < 20) return "dusk";
+  // Dedicated sunrise/sunset views: one hour before to one hour after
+  // (sunrise ~06:00, sunset ~19:00, no geolocation).
+  if (h >= 5 && h < 7) return "dawn"; // sunrise
+  if (h >= 7 && h < 18) return "day";
+  if (h >= 18 && h < 20) return "dusk"; // sunset
   return "night";
 }
 // Atmospheric scenery layered in the area around the globe; changes with the
@@ -56,7 +58,7 @@ const PHASE: Record<Phase, PhaseDef> = {
     base: "linear-gradient(180deg,#bcd2ff 0%,#ffd9c2 56%,#ffc2cf 100%)",
     accent: "radial-gradient(70% 55% at 50% 82%, rgba(255,176,120,.55), transparent 70%)",
     glow: "rgba(255,160,120,.40)", vignette: "radial-gradient(120% 100% at 50% 50%, transparent 60%, rgba(40,20,30,.18))",
-    stars: 0, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff9e6b", label: "Dawn",
+    stars: 0, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff9e6b", label: "Sunrise",
   },
   day: {
     base: "linear-gradient(180deg,#a9caf3 0%,#d8e8ff 46%,#fbf8f1 100%)",
@@ -68,7 +70,7 @@ const PHASE: Record<Phase, PhaseDef> = {
     base: "linear-gradient(180deg,#15123a 0%,#3a2350 36%,#8a3f55 70%,#e0794a 100%)",
     accent: "radial-gradient(60% 50% at 50% 100%, rgba(255,150,90,.5), transparent 70%)",
     glow: "rgba(190,90,140,.38)", vignette: "radial-gradient(120% 100% at 50% 50%, transparent 52%, rgba(0,0,0,.34))",
-    stars: 0.28, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff8f6b", label: "Dusk",
+    stars: 0.28, globe: "//unpkg.com/three-globe/example/img/earth-day.jpg", atmo: "#ff8f6b", label: "Sunset",
   },
   night: {
     base: "radial-gradient(75% 62% at 50% 42%, #16224d 0%, #0a1230 46%, #05070f 100%)",
@@ -106,6 +108,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [fKind, setFKind] = useState<"all" | "org" | "person">("all");
   const [statsOpen, setStatsOpen] = useState(true);
   const [beamsOn, setBeamsOn] = useState(true);
+  const [bgMode, setBgMode] = useState<"auto" | "day" | "night">("auto");
   const [territory, setTerritory] = useState<string | null>(null);
 
   useEffect(() => setPhase(currentPhase()), []);
@@ -199,8 +202,9 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   }
 
   const active = fOwner !== "all" || fSegment !== "all" || fCountry !== "all" || fKind !== "all";
-  const ph = PHASE[phase];
-  const labelInk = phase === "day" || phase === "dawn" ? "rgba(12,19,32,0.92)" : "rgba(234,240,255,0.96)";
+  const effPhase: Phase = bgMode === "auto" ? phase : bgMode;
+  const ph = PHASE[effPhase];
+  const labelInk = effPhase === "day" || effPhase === "dawn" ? "rgba(12,19,32,0.92)" : "rgba(234,240,255,0.96)";
 
   return (
     <div ref={wrapRef} className="fixed bottom-0 left-56 right-0 top-14 overflow-hidden">
@@ -402,6 +406,28 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           >
             Beams
           </button>
+
+          <span className="h-5 w-px bg-line" />
+
+          {/* Backdrop: auto (time of day) / day / night, icons only */}
+          <div className="inline-flex overflow-hidden rounded-full border border-line">
+            {([
+              ["auto", "Auto (time of day)", "M12 3a9 9 0 1 0 0 18V3Z"],
+              ["day", "Day", "M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10ZM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"],
+              ["night", "Night", "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"],
+            ] as const).map(([m, title, d]) => (
+              <button
+                key={m}
+                onClick={() => setBgMode(m)}
+                title={title}
+                className={`px-2.5 py-1.5 transition ${bgMode === m ? "bg-primary text-primary-contrast" : "text-ink-soft hover:bg-surface-muted"}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+                  <path d={d} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            ))}
+          </div>
 
           {active && (
             <button onClick={() => { setFOwner("all"); setFSegment("all"); setFCountry("all"); setFKind("all"); }} className={Pill}>
