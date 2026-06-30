@@ -65,8 +65,13 @@ first login, delete-account gated by 2FA, Google OAuth):
   territory (country) filter that also recomputes the numbers is still open. Deals
   carry owner directly but not country, so territory needs a deal-to-org-to-country
   join. Defer until needed.
-- **Quick add, Cmd-K command palette, global search (parity section 0, data-capture
-  Tier 2).** Create any record in seconds from anywhere; jump-to-record search.
+- **Command palette and global search: DONE.** `components/crm/CommandPalette.tsx`
+  in the topbar, opened by Cmd/Ctrl+K or the "Search or add" button. Debounced
+  cross-object search via `app/api/search/route.ts` (queries every object's
+  search fields), keyboard navigation, and "New X" quick-add actions for every
+  object. Still to do for full data-capture Tier 2: a quick-add drawer with
+  essential fields and "save and add another" (today the actions route to the
+  full new-record form).
 - **Record dossier upgrade (parity section 4).** Full-screen identity-left,
   data-right detail; linked records as a hub; owner-book toggle; "log conversation"
   pre-targeted into the AI funnel.
