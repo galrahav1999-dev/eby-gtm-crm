@@ -32,21 +32,29 @@ export default async function SettingsPage() {
         </div>
       )}
 
+      <div
+        className="mb-4 rounded-lg px-3 py-2 text-sm text-ink-soft"
+        style={{ background: "color-mix(in srgb, var(--primary) 9%, transparent)" }}
+      >
+        You can run the whole logger on Claude alone when you paste notes or a transcript. An OpenAI key is needed only to
+        transcribe uploaded audio (Whisper is OpenAI's speech-to-text). Connect one or both.
+      </div>
+
       <div className="grid gap-5 md:grid-cols-2">
         <KeyCard
-          provider="openai"
-          label="Transcription (OpenAI)"
-          blurb="Turns uploaded recordings into text (Whisper)."
-          getUrl="https://platform.openai.com/api-keys"
-          connected={!!(data as any)?.openai_key_cipher}
+          provider="anthropic"
+          label="Extraction (Claude)"
+          blurb="Claude reads the transcript or your pasted notes and drafts the records. Required for the logger."
+          getUrl="https://console.anthropic.com/settings/keys"
+          connected={!!(data as any)?.anthropic_key_cipher}
           disabled={!encOn}
         />
         <KeyCard
-          provider="anthropic"
-          label="Extraction (Anthropic)"
-          blurb="Reads the transcript and drafts records (Claude)."
-          getUrl="https://console.anthropic.com/settings/keys"
-          connected={!!(data as any)?.anthropic_key_cipher}
+          provider="openai"
+          label="Transcription (OpenAI Whisper)"
+          blurb="Whisper is OpenAI's speech-to-text. Optional: needed only to transcribe uploaded audio."
+          getUrl="https://platform.openai.com/api-keys"
+          connected={!!(data as any)?.openai_key_cipher}
           disabled={!encOn}
         />
       </div>
