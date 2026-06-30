@@ -1,7 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { resolveCoords, jitter } from "@/lib/geo";
 import { personName } from "@/lib/format";
+import { B2B_STAGES } from "@/lib/enums";
 import { GlobeHome, type GlobePoint } from "@/components/crm/GlobeHome";
+
+// The five progression stages, for the compact globe funnel (outcomes omitted).
+const FLOW = B2B_STAGES.filter((s) => !/closed/i.test(s));
 
 export const dynamic = "force-dynamic";
 
@@ -17,14 +21,21 @@ export default async function Home() {
   const supabase = createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [{ data: orgs }, { data: people }, interviews, deals, overduePeople, overdueDeals] = await Promise.all([
-    supabase.from("organizations").select("id, display_id, name, owner, segment, country, city, org_type").is("archived_at", null),
-    supabase.from("people").select("id, display_id, first_name, last_name, owner, segment, country, city").is("archived_at", null),
-    count("interactions", (q) => q.eq("type", "Discovery interview")),
-    count("deals"),
-    count("people", (q) => q.lte("next_step_date", today).not("next_step_date", "is", null)),
-    count("deals", (q) => q.lte("next_step_date", today).not("next_step_date", "is", null)),
-  ]);
+  const [{ data: orgs }, { data: people }, interviews, deals, { data: dealStages }, overduePeople, overdueDeals] =
+    await Promise.all([
+      supabase.from("organizations").select("id, display_id, name, owner, segment, country, city, org_type").is("archived_at", null),
+      supabase.from("people").select("id, display_id, first_name, last_name, owner, segment, country, city").is("archived_at", null),
+      count("interactions", (q) => q.eq("type", "Discovery interview")),
+      count("deals"),
+      supabase.from("deals").select("stage").is("archived_at", null),
+      count("people", (q) => q.lte("next_step_date", today).not("next_step_date", "is", null)),
+      count("deals", (q) => q.lte("next_step_date", today).not("next_step_date", "is", null)),
+    ]);
+
+  const funnel = FLOW.map((stage) => ({
+    stage,
+    count: (dealStages ?? []).filter((d) => d.stage === stage).length,
+  }));
 
   const points: GlobePoint[] = [];
   for (const o of orgs ?? []) {
@@ -56,6 +67,7 @@ export default async function Home() {
     overdue: overduePeople + overdueDeals,
     placed: points.length,
     total: (orgs?.length ?? 0) + (people?.length ?? 0),
+    funnel,
   };
 
   return <GlobeHome points={points} stats={stats} />;
