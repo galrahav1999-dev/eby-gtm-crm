@@ -53,6 +53,7 @@ interface Stats {
   overdue: number;
   placed: number;
   total: number;
+  funnel: { stage: string; count: number }[];
 }
 
 type Phase = "dawn" | "day" | "dusk" | "night";
@@ -370,6 +371,32 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
               <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent" style={{ width: `${Math.min(100, (stats.interviews / 25) * 100)}%` }} />
             </div>
+
+            {stats.deals > 0 && (
+              <div className="mt-3 border-t border-line-soft pt-3">
+                <div className="label-eyebrow mb-1.5">Deals by stage</div>
+                <div className="space-y-1.5">
+                  {stats.funnel.map((f) => {
+                    const max = Math.max(1, ...stats.funnel.map((x) => x.count));
+                    return (
+                      <div key={f.stage} className="flex items-center gap-2">
+                        <span className="w-20 shrink-0 truncate text-[11px] text-ink-muted" title={f.stage}>
+                          {f.stage.replace(/^\d+\s*/, "")}
+                        </span>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-muted">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: `${Math.max(4, (f.count / max) * 100)}%`, background: "linear-gradient(90deg, var(--primary), var(--accent))" }}
+                          />
+                        </div>
+                        <span className="w-4 shrink-0 text-right text-[11px] font-medium text-ink-soft">{f.count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <button onClick={() => router.push("/dashboard")} className="mt-3 w-full text-center text-xs font-medium text-primary hover:underline">
               Open full dashboard →
             </button>

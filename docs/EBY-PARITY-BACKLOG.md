@@ -27,6 +27,15 @@ Last updated: 2026-06-30.
   name plus whether it has records; clicking a country opens the existing
   territory funnel. Auto-rotation locks while a territory is open. Replaced the
   old centroid text labels.
+- **Central metrics and funnels (parity section 6, priority).** `/dashboard` is
+  now a client view (`components/crm/DashboardView.tsx`) with an owner scope
+  filter that recomputes every number, a scope indicator, KPI tiles, a B2B
+  deal-stage funnel (count, value, stage-to-stage conversion, plus won/lost
+  outcome tiles), and a B2C waitlist cohort funnel (Signups, Confirmed,
+  Activated, Retained D30, Paid with conversion percents and confirm /
+  signup-to-paid rates). The globe Snapshot card also shows a compact deals-by-
+  stage strip. Real Supabase queries; the leftover demo `lib/metrics.ts` is no
+  longer referenced by the app.
 
 ---
 
@@ -52,12 +61,10 @@ Last updated: 2026-06-30.
 In the agreed build order after the auth work (PR #32 promotion, require 2FA at
 first login, delete-account gated by 2FA, Google OAuth):
 
-- **Central metrics and funnels (parity section 6, priority).** Pipeline-by-stage
-  distribution, the B2B deal-stage funnel, the B2C waitlist cohort funnel
-  (Signups, Confirmed, Activated, Retained D30, Paid with conversion percents), a
-  scope indicator that recomputes as owner and territory filters change. Compact
-  on the globe, full on `/dashboard`. Real Supabase queries, no demo data. Replace
-  the leftover demo `lib/metrics.ts` (it reads `data/companies.json`).
+- **Territory scope on the dashboard.** The owner scope filter is live; a
+  territory (country) filter that also recomputes the numbers is still open. Deals
+  carry owner directly but not country, so territory needs a deal-to-org-to-country
+  join. Defer until needed.
 - **Quick add, Cmd-K command palette, global search (parity section 0, data-capture
   Tier 2).** Create any record in seconds from anywhere; jump-to-record search.
 - **Record dossier upgrade (parity section 4).** Full-screen identity-left,
