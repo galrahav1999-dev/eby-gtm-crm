@@ -1,38 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { ConfirmModal } from "./ConfirmModal";
 
 /**
- * Confirm-then-delete. Wraps a bound server action; shows an inline confirm so
- * a misclick never destroys a record.
+ * Confirm-then-run for a hard-to-undo action. Opens a styled confirmation modal
+ * so a misclick never archives or discards a record.
  */
 export function DeleteButton({
   action,
   label = "Delete",
-  confirmText = "Delete this record permanently?",
+  confirmText = "This cannot be easily undone.",
 }: {
   action: () => Promise<void>;
   label?: string;
   confirmText?: string;
 }) {
-  const [confirming, setConfirming] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [pending, start] = useTransition();
 
-  if (!confirming) {
-    return (
-      <button type="button" onClick={() => setConfirming(true)} className="btn-danger">
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="btn-danger">
         {label}
       </button>
-    );
-  }
-  return (
-    <form action={action} className="flex items-center gap-2">
-      <span className="text-xs text-ink-muted">{confirmText}</span>
-      <button type="submit" className="btn-danger">
-        Yes, delete
-      </button>
-      <button type="button" onClick={() => setConfirming(false)} className="btn-ghost text-xs">
-        Cancel
-      </button>
-    </form>
+      <ConfirmModal
+        open={open}
+        title={`${label}?`}
+        message={confirmText}
+        confirmLabel={`Yes, ${label.toLowerCase()}`}
+        danger
+        busy={pending}
+        onCancel={() => setOpen(false)}
+        onConfirm={() => start(async () => { await action(); })}
+      />
+    </>
   );
 }

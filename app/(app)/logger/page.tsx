@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Badge } from "@/components/crm/ui";
 import { hasKey } from "@/lib/ai/keys";
 import { AudioUploader } from "./AudioUploader";
+import { KeyStatus } from "./KeyStatus";
 
 export const dynamic = "force-dynamic";
 // Transcribing several recordings can take a while; allow a longer function run.
@@ -25,19 +26,7 @@ export default async function LoggerPage() {
         subtitle="Capture a call as audio or notes. The AI drafts records mapped to your fields, you review and edit every field, then accept. Nothing is saved until you do."
       />
 
-      {(!aiOn || !sttOn) && (
-        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700">
-          {!aiOn && !sttOn
-            ? "Connect your AI keys to use the logger."
-            : !aiOn
-            ? "Extraction is off until you connect your Anthropic key."
-            : "Audio transcription is off until you connect your OpenAI key."}{" "}
-          <Link href="/settings" className="font-medium underline">
-            Open Settings
-          </Link>
-          .
-        </div>
-      )}
+      <KeyStatus aiOn={aiOn} sttOn={sttOn} />
 
       <AudioUploader sttOn={sttOn} />
 
