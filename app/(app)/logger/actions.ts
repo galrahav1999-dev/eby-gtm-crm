@@ -5,6 +5,7 @@ import { getAllOptions } from "@/lib/options";
 import { extractRecords } from "@/lib/ai/extract";
 import { transcribeAudio } from "@/lib/ai/transcribe";
 import { resolveKey } from "@/lib/ai/keys";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { commitProposal, type IncludeSets } from "@/lib/ai/commit";
 import type { Proposal } from "@/lib/ai/extract";
 import { logAudit } from "@/lib/audit";
@@ -94,6 +95,8 @@ export async function parseAudioPaths(
   filenames: string[],
   pastedText?: string
 ): Promise<{ id: string }> {
+  // Standard rate limit on AI runs to protect provider quotas and cost.
+  await enforceRateLimit("ai_logger", 12, 60);
   const supabase = createClient();
   const { data: ing, error } = await supabase
     .from("ai_ingestions")
