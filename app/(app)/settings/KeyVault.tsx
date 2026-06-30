@@ -16,7 +16,7 @@ const PROVIDERS: { key: Provider; label: string; blurb: string; getUrl: string }
   { key: "openai", label: "OpenAI (Whisper)", blurb: "Audio transcription only.", getUrl: "https://platform.openai.com/api-keys" },
 ];
 
-export function KeyVault({ encOn }: { encOn: boolean }) {
+export function KeyVault({ encOn, legacy }: { encOn: boolean; legacy?: { anthropic: boolean; openai: boolean } }) {
   const supabase = createClient();
   const router = useRouter();
   const [needCode, setNeedCode] = useState(false);
@@ -37,7 +37,9 @@ export function KeyVault({ encOn }: { encOn: boolean }) {
     if (data?.nextLevel === "aal2" && data?.currentLevel !== "aal2") {
       setNeedCode(true);
       const { data: f } = await supabase.auth.mfa.listFactors();
-      setFactorId(f?.totp?.[0]?.id ?? null);
+      // Use a VERIFIED factor; stale unverified ones would reject the code.
+      const verified = (f?.totp ?? []).find((x: any) => x.status === "verified");
+      setFactorId(verified?.id ?? f?.totp?.[0]?.id ?? null);
     } else {
       setNeedCode(false);
     }
@@ -164,6 +166,15 @@ export function KeyVault({ encOn }: { encOn: boolean }) {
                   </li>
                 ))}
               </ul>
+            )}
+
+            {mine.length === 0 && legacy?.[p.key] && (
+              <p
+                className="mb-3 rounded-lg px-3 py-2 text-xs"
+                style={{ background: "color-mix(in srgb, var(--growth) 14%, transparent)", color: "var(--growth)" }}
+              >
+                A key is already connected and in use (added before the vault). Add it here to manage or replace it.
+              </p>
             )}
 
             <div className="flex flex-wrap items-end gap-2">

@@ -35,6 +35,18 @@ export function TwoFactor() {
     setErr(null);
     setBusy(true);
     try {
+      // Clear any half-finished (unverified) factors so a stale secret can't
+      // shadow the new one and cause "invalid code".
+      const { data: existing } = await supabase.auth.mfa.listFactors();
+      for (const f of existing?.totp ?? []) {
+        if (f.status !== "verified") {
+          try {
+            await supabase.auth.mfa.unenroll({ factorId: f.id });
+          } catch {
+            /* ignore */
+          }
+        }
+      }
       const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: `EBY-${Date.now()}` });
       if (error) throw error;
       setEnroll({ id: data.id, qr: (data as any).totp.qr_code, secret: (data as any).totp.secret });
