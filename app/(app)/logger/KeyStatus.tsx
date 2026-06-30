@@ -48,7 +48,7 @@ export function KeyStatus({ aiOn, sttOn }: { aiOn: boolean; sttOn: boolean }) {
             OpenAI for audio
           </span>
         ) : (
-          <span>Audio needs an OpenAI key; pasted text works with Claude alone.</span>
+          <span>To transcribe audio, add an OpenAI key. Text works with Claude alone.</span>
         )}
         <Link href="/settings" className="font-medium text-primary hover:underline">
           Manage keys
