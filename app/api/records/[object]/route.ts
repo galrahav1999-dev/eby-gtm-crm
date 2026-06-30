@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
 import { getObjectDef } from "@/lib/schema/registry";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 // Inline quick-create of any framework object (used by FK pickers).
@@ -13,6 +14,9 @@ export async function POST(req: Request, { params }: { params: { object: string 
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const rl = await checkRateLimit("api_create", 60, 60);
+  if (!rl.ok) return NextResponse.json({ error: rl.message }, { status: 429 });
 
   const body = await req.json().catch(() => ({}));
   const allowed = new Set(def.fields.map((f) => f.name));
