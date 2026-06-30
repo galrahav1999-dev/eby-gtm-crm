@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmModal } from "@/components/crm/ConfirmModal";
 import { setKey, removeKey } from "./actions";
 
 export function KeyCard({
@@ -24,6 +25,7 @@ export function KeyCard({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   async function save() {
     setBusy(true);
@@ -108,11 +110,25 @@ export function KeyCard({
           {busy ? "Saving…" : connected ? "Replace key" : "Connect key"}
         </button>
         {connected && (
-          <button type="button" onClick={remove} disabled={busy} className="btn-ghost">
+          <button type="button" onClick={() => setConfirmRemove(true)} disabled={busy} className="btn-ghost">
             Remove
           </button>
         )}
       </div>
+
+      <ConfirmModal
+        open={confirmRemove}
+        title="Remove this key?"
+        message="The logger will stop using it until you connect another."
+        confirmLabel="Remove key"
+        danger
+        busy={busy}
+        onCancel={() => setConfirmRemove(false)}
+        onConfirm={async () => {
+          await remove();
+          setConfirmRemove(false);
+        }}
+      />
     </div>
   );
 }
