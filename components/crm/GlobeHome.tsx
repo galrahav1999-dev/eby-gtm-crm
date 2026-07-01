@@ -79,6 +79,10 @@ const PHASE: Record<Phase, PhaseDef> = {
   },
 };
 
+// Beams converge on Jerusalem: the reconnection to Israel made visible.
+const ISRAEL = { lat: 31.7683, lng: 35.2137 };
+const BEAM_COLOR = ["rgba(56,189,248,0)", "rgba(56,189,248,0.9)", "#a78bfa"];
+
 // Map a world-atlas country shape to the short country value EBY records use.
 const POLY_NAME_TO_EBY: Record<string, string> = {
   "United States of America": "USA",
@@ -98,10 +102,9 @@ const POLY = {
   strokeHot: "rgba(56,189,248,0.95)",
 };
 
-// Altitudes for the camera flights, world down to a single record.
 const ALT = { world: 2.5, country: 1.25, city: 0.55 };
 
-// Soft radial-gradient texture for the additive neon bloom at each beam tip.
+// Soft radial-gradient texture for the additive neon bloom on each dot.
 function makeGlowTexture() {
   const c = document.createElement("canvas");
   c.width = c.height = 64;
@@ -124,17 +127,13 @@ const Pill =
   "rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink-soft outline-none transition hover:text-ink";
 
 type Level = "world" | "country" | "city";
-interface Node {
-  kind: Level | "record";
+interface Agg {
   key: string;
   name: string;
   lat: number;
   lng: number;
   value: number;
   owner: string | null;
-  href?: string;
-  recordKind?: "org" | "person";
-  segment?: string | null;
 }
 
 function dominant(owners: Map<string, number>): string | null {
@@ -153,6 +152,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [bgMode, setBgMode] = useState<"auto" | "day" | "night">("auto");
   const [fOwner, setFOwner] = useState("all");
   const [fKind, setFKind] = useState<"all" | "org" | "person">("all");
+  const [beamsOn, setBeamsOn] = useState(true);
   const [statsOpen, setStatsOpen] = useState(true);
   const [polys, setPolys] = useState<any[]>([]);
   const [hoverPoly, setHoverPoly] = useState<any>(null);
@@ -199,8 +199,17 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [points]);
 
-  // Aggregations for each drill level, built from the filtered records.
-  const worldNodes = useMemo<Node[]>(() => {
+  // The records shown on the globe at the current level (individual dots).
+  const shown = useMemo(() => {
+    if (level === "world") return filtered;
+    if (level === "country") return filtered.filter((p) => p.country === selCountry);
+    return filtered.filter((p) => p.country === selCountry && (p.city || "Unspecified") === selCity);
+  }, [filtered, level, selCountry, selCity]);
+
+  const colored = useMemo(() => shown.map((p) => ({ ...p, color: ownerColor(p.owner) })), [shown]);
+
+  // Country centroids (for the polygon drill + camera flight).
+  const countryAgg = useMemo<Agg[]>(() => {
     const m = new Map<string, { lat: number; lng: number; n: number; owners: Map<string, number> }>();
     for (const p of filtered) {
       if (!p.country) continue;
@@ -209,12 +218,11 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
       if (p.owner) e.owners.set(p.owner, (e.owners.get(p.owner) ?? 0) + 1);
       m.set(p.country, e);
     }
-    return [...m.entries()].map(([country, e]) => ({
-      kind: "country" as const, key: country, name: country, lat: e.lat / e.n, lng: e.lng / e.n, value: e.n, owner: dominant(e.owners),
-    }));
+    return [...m.entries()].map(([key, e]) => ({ key, name: key, lat: e.lat / e.n, lng: e.lng / e.n, value: e.n, owner: dominant(e.owners) }));
   }, [filtered]);
 
-  const cityNodes = useMemo<Node[]>(() => {
+  // Cities within the selected country (for the drill panel + camera flight).
+  const cityAgg = useMemo<Agg[]>(() => {
     if (!selCountry) return [];
     const m = new Map<string, { lat: number; lng: number; n: number; owners: Map<string, number> }>();
     for (const p of filtered) {
@@ -226,35 +234,34 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
       m.set(city, e);
     }
     return [...m.entries()]
-      .map(([city, e]) => ({ kind: "city" as const, key: city, name: city, lat: e.lat / e.n, lng: e.lng / e.n, value: e.n, owner: dominant(e.owners) }))
+      .map(([key, e]) => ({ key, name: key, lat: e.lat / e.n, lng: e.lng / e.n, value: e.n, owner: dominant(e.owners) }))
       .sort((a, b) => b.value - a.value);
   }, [filtered, selCountry]);
 
-  const recordNodes = useMemo<Node[]>(() => {
-    if (!selCountry || !selCity) return [];
-    return filtered
-      .filter((p) => p.country === selCountry && (p.city || "Unspecified") === selCity)
-      .map((p) => ({ kind: "record" as const, key: p.id, name: p.name, lat: p.lat, lng: p.lng, value: 1, owner: p.owner, href: p.href, recordKind: p.kind, segment: p.segment }));
-  }, [filtered, selCountry, selCity]);
+  const dataCountrySet = useMemo(() => new Set(countryAgg.map((c) => c.key)), [countryAgg]);
 
-  const nodes = level === "world" ? worldNodes : level === "country" ? cityNodes : recordNodes;
-  const maxValue = useMemo(() => Math.max(1, ...nodes.map((n) => n.value)), [nodes]);
-  const beamLevel = level === "world";
-  const tipAlt = (d: any) => (beamLevel ? 0.05 + 0.5 * ((d?.value || 0) / maxValue) : 0.012);
-
-  const colored = useMemo(() => nodes.map((n) => ({ ...n, color: ownerColor(n.owner) })), [nodes]);
-
-  const dataCountrySet = useMemo(() => new Set(worldNodes.map((n) => n.key)), [worldNodes]);
+  // Animated flying beams to Jerusalem, world level only. Each flows at its own
+  // pace and starts at a staggered offset so the field feels alive.
+  const beams = useMemo(() => {
+    if (!beamsOn || level !== "world") return [];
+    return colored
+      .filter((p) => Math.hypot(p.lat - ISRAEL.lat, p.lng - ISRAEL.lng) > 1.2)
+      .slice(0, 160)
+      .map((p, i) => ({
+        startLat: p.lat, startLng: p.lng, endLat: ISRAEL.lat, endLng: ISRAEL.lng,
+        color: BEAM_COLOR, speed: 2600 + ((i * 137) % 2600), gap: ((i * 53) % 100) / 100,
+      }));
+  }, [colored, beamsOn, level]);
 
   // Camera flights between levels.
   useEffect(() => {
     const g = globeRef.current;
     if (!g || !g.pointOfView) return;
     if (level === "city" && selCity) {
-      const c = cityNodes.find((x) => x.key === selCity);
+      const c = cityAgg.find((x) => x.key === selCity);
       if (c) g.pointOfView({ lat: c.lat, lng: c.lng, altitude: ALT.city }, 1100);
     } else if (level === "country" && selCountry) {
-      const c = worldNodes.find((x) => x.key === selCountry);
+      const c = countryAgg.find((x) => x.key === selCountry);
       if (c) g.pointOfView({ lat: c.lat, lng: c.lng, altitude: ALT.country }, 1100);
     } else {
       const cur = g.pointOfView();
@@ -288,11 +295,6 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     if (level === "city") { setSelCity(null); setLevel("country"); }
     else if (level === "country") { setSelCountry(null); setLevel("world"); }
   }
-  function onNodeClick(d: any) {
-    if (d.kind === "country") drillToCountry(d.key);
-    else if (d.kind === "city") drillToCity(d.key);
-    else if (d.href) router.push(d.href);
-  }
 
   // Escape backs out one level.
   useEffect(() => {
@@ -309,8 +311,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const active = fOwner !== "all" || fKind !== "all";
   const hoverEby = hoverPoly ? POLY_NAME_TO_EBY[hoverPoly?.properties?.name] : null;
 
-  const locLabel =
-    level === "city" ? `${selCity} · ${selCountry}` : level === "country" ? selCountry : "Worldwide";
+  const locLabel = level === "city" ? `${selCity} · ${selCountry}` : level === "country" ? selCountry : "Worldwide";
   const backLabel = level === "city" ? selCountry : "the world";
 
   return (
@@ -333,7 +334,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           atmosphereAltitude={0.22}
           // Country shapes: world level only, hover highlight + click to drill.
           polygonsData={level === "world" ? polys : []}
-          polygonAltitude={(d: any) => (d === hoverPoly ? 0.07 : 0.01)}
+          polygonAltitude={(d: any) => (d === hoverPoly ? 0.06 : 0.01)}
           polygonCapColor={(d: any) => {
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             if (d === hoverPoly) return POLY.capHover;
@@ -350,35 +351,30 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           }}
           polygonLabel={(d: any) => {
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
-            const node = eby ? worldNodes.find((n) => n.key === eby) : null;
-            return tooltip(d?.properties?.name ?? "", [node ? `${node.value} record${node.value === 1 ? "" : "s"} · click to zoom in` : "No records here"]);
+            const c = eby ? countryAgg.find((n) => n.key === eby) : null;
+            return tooltip(d?.properties?.name ?? "", [c ? `${c.value} record${c.value === 1 ? "" : "s"} · click to zoom in` : "No records here"]);
           }}
-          // Beams (world) / dots (drilled in), colored by owner.
+          // Flat glowing dots, colored by owner (no tall columns).
           pointsData={colored as object[]}
           pointLat="lat"
           pointLng="lng"
           pointColor="color"
-          pointAltitude={(d: any) => (d === hoverPt && !beamLevel ? tipAlt(d) + 0.02 : tipAlt(d))}
-          pointRadius={(d: any) => {
-            const base = beamLevel ? 0.12 + 0.14 * (d.value / maxValue) : d.kind === "record" ? 0.42 : 0.5;
-            return d === hoverPt ? base * 1.5 : base;
-          }}
-          pointResolution={16}
+          pointAltitude={(d: any) => (d === hoverPt ? 0.03 : 0.012)}
+          pointRadius={(d: any) => (d === hoverPt ? 0.75 : 0.5)}
+          pointResolution={18}
           pointsTransitionDuration={0}
-          onPointClick={onNodeClick}
+          onPointClick={(d: any) => router.push(d.href)}
           onPointHover={(p: any) => setHoverPt(p || null)}
-          pointLabel={(d: any) => {
-            if (d.kind === "record") return tooltip(d.name, [`${d.recordKind === "org" ? "Organization" : "Person"}${d.segment ? " · " + d.segment : ""}`, "Click to open"]);
-            const unit = d.kind === "country" ? "click to zoom into cities" : "click to see records";
-            return tooltip(d.name, [`${d.value} record${d.value === 1 ? "" : "s"}`, unit]);
-          }}
-          // Additive neon bloom at each beam/dot tip.
+          pointLabel={(d: any) =>
+            tooltip(d.name, [`${d.kind === "org" ? "Organization" : "Person"}${d.segment ? " · " + d.segment : ""}${d.owner ? " · " + d.owner : ""}`, "Click to open"])
+          }
+          // Additive neon bloom on each dot.
           customLayerData={colored as object[]}
           customThreeObject={(d: any) => {
             try {
               if (!glowTex) return new THREE.Object3D();
               const sprite = new THREE.Sprite(
-                new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(d.color), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0.9 })
+                new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(d.color), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0.85 })
               );
               sprite.raycast = () => {};
               return sprite;
@@ -390,26 +386,35 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
             try {
               const g = globeRef.current;
               if (!g || typeof g.getCoords !== "function" || !obj?.material) return;
-              const c = g.getCoords(d.lat, d.lng, tipAlt(d));
+              const c = g.getCoords(d.lat, d.lng, 0.012);
               if (!c) return;
               obj.position.set(c.x, c.y, c.z);
               (obj.material as THREE.SpriteMaterial).color.set(d.color);
-              const s = beamLevel ? 7 + 12 * ((d?.value || 0) / maxValue) : d.kind === "record" ? 9 : 12;
+              const s = d === hoverPt ? 13 : 9;
               obj.scale.set(s, s, 1);
             } catch {
               /* never let a transient three.js state crash the view */
             }
           }}
-          ringsData={colored as object[]}
-          ringLat="lat"
-          ringLng="lng"
-          ringColor={(d: any) => (t: number) => {
-            const c = new THREE.Color(d.color);
-            return `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)},${1 - t})`;
-          }}
-          ringMaxRadius={beamLevel ? 3 : 1.6}
-          ringPropagationSpeed={1.6}
-          ringRepeatPeriod={1600}
+          // Animated flying beams to Jerusalem (world level).
+          arcsData={beams}
+          arcStartLat="startLat"
+          arcStartLng="startLng"
+          arcEndLat="endLat"
+          arcEndLng="endLng"
+          arcColor="color"
+          arcStroke={0.5}
+          arcAltitudeAutoScale={0.45}
+          arcDashLength={0.45}
+          arcDashGap={1.8}
+          arcDashInitialGap={(d: any) => d.gap}
+          arcDashAnimateTime={(d: any) => d.speed}
+          arcsTransitionDuration={400}
+          ringsData={beams.length ? [{ lat: ISRAEL.lat, lng: ISRAEL.lng }] : []}
+          ringColor={() => (t: number) => `rgba(167,139,250,${1 - t})`}
+          ringMaxRadius={4}
+          ringPropagationSpeed={2}
+          ringRepeatPeriod={1400}
         />
       </div>
 
@@ -427,7 +432,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-muted">EBY · Mission control</span>
             <span className="text-[19px] font-semibold leading-tight text-ink">{locLabel === "Worldwide" ? "The world we are reconnecting" : locLabel}</span>
             <span className="text-xs text-ink-muted">
-              {ph.label} · {level === "world" ? `${filtered.length} of ${stats.total} shown` : level === "country" ? "click a city to zoom in" : "click a record to open"}
+              {ph.label} · {level === "world" ? `${shown.length} of ${stats.total} shown` : level === "country" ? "pick a city, or click a dot to open" : "click a dot to open"}
             </span>
           </div>
         </div>
@@ -500,7 +505,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
         </div>
       )}
 
-      {/* Drill panel (country / city): the click-friendly list */}
+      {/* Drill panel (country / city) */}
       {level !== "world" && (
         <div className="absolute right-6 top-5 flex max-h-[calc(100%-8rem)] w-72 flex-col">
           <div className="card flex min-h-0 flex-col overflow-hidden p-0">
@@ -508,29 +513,32 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
               <div className="label-eyebrow">{level === "country" ? "Cities in" : "Records in"}</div>
               <div className="text-sm font-semibold text-ink">{level === "country" ? selCountry : selCity}</div>
               <div className="mt-0.5 text-[11px] text-ink-muted">
-                {level === "country" ? `${cityNodes.length} cit${cityNodes.length === 1 ? "y" : "ies"} · click to zoom in` : `${recordNodes.length} record${recordNodes.length === 1 ? "" : "s"} · click to open`}
+                {level === "country" ? `${cityAgg.length} cit${cityAgg.length === 1 ? "y" : "ies"} · click to zoom in` : `${shown.length} record${shown.length === 1 ? "" : "s"} · click to open`}
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
-              {(level === "country" ? cityNodes : recordNodes).map((n) => (
-                <button key={n.key} onClick={() => onNodeClick(n)} className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-surface-muted">
-                  {level === "country" ? (
-                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: ownerColor(n.owner), boxShadow: `0 0 6px ${ownerColor(n.owner)}` }} />
-                  ) : (
-                    <OwnerAvatar owner={n.owner} size={22} />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium text-ink">{n.name}</div>
-                    <div className="text-[11px] text-ink-muted">
-                      {level === "country" ? `${n.value} record${n.value === 1 ? "" : "s"}` : n.recordKind === "org" ? "Organization" : "Person"}
-                    </div>
-                  </div>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-muted group-hover:text-ink-soft" fill="none">
-                    <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              ))}
-              {(level === "country" ? cityNodes : recordNodes).length === 0 && (
+              {level === "country"
+                ? cityAgg.map((c) => (
+                    <button key={c.key} onClick={() => drillToCity(c.key)} className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-surface-muted">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: ownerColor(c.owner), boxShadow: `0 0 6px ${ownerColor(c.owner)}` }} />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-ink">{c.name}</div>
+                        <div className="text-[11px] text-ink-muted">{c.value} record{c.value === 1 ? "" : "s"}</div>
+                      </div>
+                      <Chevron />
+                    </button>
+                  ))
+                : shown.map((p) => (
+                    <button key={p.id} onClick={() => router.push(p.href)} className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-surface-muted">
+                      <OwnerAvatar owner={p.owner} size={22} />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-ink">{p.name}</div>
+                        <div className="text-[11px] text-ink-muted">{p.kind === "org" ? "Organization" : "Person"}</div>
+                      </div>
+                      <Chevron />
+                    </button>
+                  ))}
+              {(level === "country" ? cityAgg.length : shown.length) === 0 && (
                 <div className="px-3 py-6 text-center text-sm text-ink-muted">Nothing here yet.</div>
               )}
             </div>
@@ -552,9 +560,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
       {ownerCounts.length > 0 && (
         <div className="pointer-events-none absolute bottom-6 right-6">
           <div className="glass rounded-xl px-3 py-2.5 shadow-card">
-            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">
-              Team{beamLevel && <span className="ml-1 normal-case tracking-normal">· beam height = records</span>}
-            </div>
+            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted">Team</div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               {ownerCounts.map(([owner]) => (
                 <span key={owner} className="flex items-center gap-1.5 text-xs text-ink-soft">
@@ -595,6 +601,10 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
             ))}
           </div>
 
+          <button onClick={() => setBeamsOn((v) => !v)} title="Animated beams to Jerusalem" className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${beamsOn ? "bg-primary text-primary-contrast" : Pill}`}>
+            Beams
+          </button>
+
           <span className="h-5 w-px bg-line" />
 
           <div className="inline-flex overflow-hidden rounded-full border border-line">
@@ -617,5 +627,13 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
         </div>
       </div>
     </div>
+  );
+}
+
+function Chevron() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 text-ink-muted group-hover:text-ink-soft" fill="none">
+      <path d="m9 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
