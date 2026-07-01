@@ -77,9 +77,14 @@ first login, delete-account gated by 2FA, Google OAuth):
   a link to the full form, and a toast with an Open link. Data-capture Tier 2 is
   complete. Backlog: a persistent global plus button in the topbar (the palette
   covers create for now).
-- **Record dossier upgrade (parity section 4).** Full-screen identity-left,
-  data-right detail; linked records as a hub; owner-book toggle; "log conversation"
-  pre-targeted into the AI funnel.
+- **Record dossier upgrade: DONE (core).** The generic detail page is now an
+  identity-left, data-right dossier: a monogram tile, title, id, owner and status
+  chips, and location on the left with Edit / Log conversation / Archive; the data
+  sections and the linked-records hub on the right. Each linked section has an
+  in-context "Add X" that opens the quick-add drawer with the link back
+  prefilled. Follow-ups: an owner-book toggle inside the card, and "Log
+  conversation" deep-linking into the AI funnel's attach-to-existing step (today
+  it links to /logger; the funnel does not yet take a pre-target param).
 - **Four-level globe drill (parity section 1).** Optional World, Country, City,
   Company camera flights layered on top of the current beam globe, without
   changing the Jerusalem-beam metaphor. The Cockpit `GlobeView.tsx` is the

@@ -31,6 +31,7 @@ export function QuickAddDrawer() {
   const [submitting, setSubmitting] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [sticky, setSticky] = useState<Record<string, string>>({});
+  const [prefill, setPrefill] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<Toast | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -44,14 +45,17 @@ export function QuickAddDrawer() {
     setBundle(null);
     setError(null);
     setSticky({});
+    setPrefill({});
   }, []);
 
   // Open on the global quick-add event (dispatched by the command palette).
   useEffect(() => {
     function onOpen(e: Event) {
-      const key = (e as CustomEvent).detail?.object as string | undefined;
+      const detail = (e as CustomEvent).detail ?? {};
+      const key = detail.object as string | undefined;
       if (key && REGISTRY[key]) {
         setSticky({});
+        setPrefill((detail.prefill as Record<string, string>) ?? {});
         setFormKey((k) => k + 1);
         setObject(key);
       }
@@ -156,11 +160,18 @@ export function QuickAddDrawer() {
                     <FieldInput
                       key={f.name}
                       field={f}
-                      value={STICKY.includes(f.name) ? sticky[f.name] : undefined}
+                      value={prefill[f.name] ?? (STICKY.includes(f.name) ? sticky[f.name] : undefined)}
                       options={bundle.options}
                       fk={f.fkTo ? bundle.fk[f.fkTo] : undefined}
                     />
                   ))}
+                  {/* Prefilled links that are not part of the quick fields (e.g. deal_id)
+                      still submit via a hidden input. */}
+                  {Object.entries(prefill)
+                    .filter(([k]) => !fields.some((f) => f.name === k))
+                    .map(([k, v]) => (
+                      <input key={k} type="hidden" name={k} value={v} />
+                    ))}
                 </form>
               )}
               {error && (
