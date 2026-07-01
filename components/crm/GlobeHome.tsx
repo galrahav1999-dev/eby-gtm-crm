@@ -108,12 +108,13 @@ const POLY = {
   capEmpty: "rgba(255,255,255,0.015)",
   capHas: "rgba(56,189,248,0.10)",
   capHover: "rgba(124,108,250,0.5)",
-  side: "rgba(120,160,255,0.08)",
+  capLocked: "rgba(124,108,250,0.26)",
+  side: "rgba(120,160,255,0.12)",
   stroke: "rgba(150,170,220,0.14)",
   strokeHot: "rgba(56,189,248,0.95)",
 };
 
-const ALT = { world: 2.5, country: 1.25, city: 0.55 };
+const ALT = { world: 2.5, country: 1.05, city: 0.5 };
 
 function tooltip(title: string, lines: string[]) {
   return `<div style="font-family:ui-sans-serif,system-ui;background:rgba(10,15,30,0.92);border:1px solid rgba(255,255,255,0.12);padding:8px 11px;border-radius:11px;color:#eaf0ff;font-size:12px;backdrop-filter:blur(8px);box-shadow:0 10px 34px rgba(0,0,0,0.5)">
@@ -349,36 +350,42 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           showAtmosphere
           atmosphereColor={ph.atmo}
           atmosphereAltitude={0.22}
-          // Country shapes: world level only, hover highlight + click to drill.
-          polygonsData={level === "world" ? polys : []}
-          polygonAltitude={(d: any) => (d === hoverPoly ? 0.06 : 0.01)}
+          // Country shapes: hover + click to drill at world; once you drill in,
+          // only the selected country stays rendered, lifted and highlighted, so
+          // the view is clearly locked onto that territory.
+          polygonsData={level === "world" ? polys : polys.filter((p: any) => POLY_NAME_TO_EBY[p?.properties?.name] === selCountry)}
+          polygonAltitude={(d: any) => (level !== "world" ? 0.06 : d === hoverPoly ? 0.06 : 0.01)}
           polygonCapColor={(d: any) => {
+            if (level !== "world") return POLY.capLocked;
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             if (d === hoverPoly) return POLY.capHover;
             if (eby && dataCountrySet.has(eby)) return POLY.capHas;
             return POLY.capEmpty;
           }}
           polygonSideColor={() => POLY.side}
-          polygonStrokeColor={(d: any) => (d === hoverPoly ? POLY.strokeHot : POLY.stroke)}
+          polygonStrokeColor={(d: any) => (level !== "world" || d === hoverPoly ? POLY.strokeHot : POLY.stroke)}
           polygonsTransitionDuration={240}
-          onPolygonHover={(p: any) => setHoverPoly(p || null)}
+          onPolygonHover={(p: any) => level === "world" && setHoverPoly(p || null)}
           onPolygonClick={(d: any) => {
+            if (level !== "world") return;
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             if (eby) drillToCountry(eby);
           }}
           polygonLabel={(d: any) => {
+            if (level !== "world") return "";
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             const c = eby ? countryAgg.find((n) => n.key === eby) : null;
             return tooltip(d?.properties?.name ?? "", [c ? `${c.value} record${c.value === 1 ? "" : "s"} · click to zoom in` : "No records here"]);
           }}
-          // Flat glowing dots, colored by owner (no tall columns).
+          // Luminous beacon dots, colored by owner: flat discs that pulse via the
+          // rings below, not tall cylinders.
           pointsData={colored as object[]}
           pointLat="lat"
           pointLng="lng"
           pointColor="color"
-          pointAltitude={(d: any) => (d === hoverPt ? 0.03 : 0.012)}
-          pointRadius={(d: any) => (d === hoverPt ? 0.75 : 0.5)}
-          pointResolution={18}
+          pointAltitude={(d: any) => (d === hoverPt ? 0.018 : 0.004)}
+          pointRadius={(d: any) => (d === hoverPt ? 0.62 : 0.34)}
+          pointResolution={24}
           pointsTransitionDuration={0}
           onPointClick={(d: any) => openRecord(d)}
           onPointHover={(p: any) => setHoverPt(p || null)}
@@ -403,9 +410,9 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           ringLat="lat"
           ringLng="lng"
           ringColor={(d: any) => (t: number) => `rgba(${d.rgb[0]},${d.rgb[1]},${d.rgb[2]},${1 - t})`}
-          ringMaxRadius={(d: any) => (d.big ? 4 : 1.8)}
-          ringPropagationSpeed={1.8}
-          ringRepeatPeriod={(d: any) => (d.big ? 1400 : 1800)}
+          ringMaxRadius={(d: any) => (d.big ? 4 : 2.4)}
+          ringPropagationSpeed={2}
+          ringRepeatPeriod={(d: any) => (d.big ? 1400 : 1200)}
         />
       </div>
 
