@@ -44,7 +44,7 @@ export default async function Home() {
     const j = jitter(o.id);
     points.push({
       id: o.id, kind: "org", name: o.name, label: `${o.name}${o.city ? " · " + o.city : ""}`,
-      owner: o.owner ?? null, segment: o.segment ?? null, country: o.country ?? null,
+      owner: o.owner ?? null, segment: o.segment ?? null, country: o.country ?? null, city: o.city ?? null,
       lat: c.lat + j.dLat, lng: c.lng + j.dLng, href: `/organizations/${o.id}`,
     });
   }
@@ -54,7 +54,7 @@ export default async function Home() {
     const j = jitter(p.id);
     points.push({
       id: p.id, kind: "person", name: personName(p), label: `${personName(p)}${p.city ? " · " + p.city : ""}`,
-      owner: p.owner ?? null, segment: p.segment ?? null, country: p.country ?? null,
+      owner: p.owner ?? null, segment: p.segment ?? null, country: p.country ?? null, city: p.city ?? null,
       lat: c.lat + j.dLat, lng: c.lng + j.dLng, href: `/people/${p.id}`,
     });
   }
