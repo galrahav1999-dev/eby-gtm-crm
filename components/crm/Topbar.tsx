@@ -1,6 +1,7 @@
 import { signOut } from "@/app/(app)/actions";
 import { ThemeToggle } from "./ThemeToggle";
 import { CommandPalette } from "./CommandPalette";
+import { QuickAddDrawer } from "./QuickAddDrawer";
 
 export function Topbar({ email }: { email: string | null }) {
   return (
@@ -10,6 +11,7 @@ export function Topbar({ email }: { email: string | null }) {
       </div>
       <div className="flex items-center gap-3">
         <CommandPalette />
+        <QuickAddDrawer />
         <ThemeToggle />
         {email && <span className="hidden text-sm text-ink-soft sm:inline">{email}</span>}
         <form action={signOut}>

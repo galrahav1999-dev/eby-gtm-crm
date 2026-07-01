@@ -15,7 +15,7 @@ export interface FkData {
   targetSingular: string;
 }
 
-function FieldInput({
+export function FieldInput({
   field,
   value,
   options,

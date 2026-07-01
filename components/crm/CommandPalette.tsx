@@ -10,6 +10,7 @@ interface Item {
   label: string;
   sub: string;
   href: string;
+  object?: string; // for actions: which object to quick-add
 }
 
 const OBJECTS = Object.values(REGISTRY).map((d) => ({ key: d.key, singular: d.singular, label: d.label }));
@@ -27,7 +28,7 @@ export function CommandPalette() {
   const actions = useMemo<Item[]>(() => {
     const needle = q.trim().toLowerCase();
     return OBJECTS.filter((o) => !needle || o.label.toLowerCase().includes(needle) || o.singular.toLowerCase().includes(needle)).map(
-      (o) => ({ type: "action", label: `New ${o.singular.toLowerCase()}`, sub: o.label, href: `/${o.key}/new` })
+      (o) => ({ type: "action", label: `New ${o.singular.toLowerCase()}`, sub: o.label, href: `/${o.key}/new`, object: o.key })
     );
   }, [q]);
 
@@ -101,7 +102,12 @@ export function CommandPalette() {
     (item: Item | undefined) => {
       if (!item) return;
       setOpen(false);
-      router.push(item.href);
+      // Actions open the quick-add drawer; records navigate to the record.
+      if (item.type === "action" && item.object) {
+        window.dispatchEvent(new CustomEvent("eby:quickadd", { detail: { object: item.object } }));
+      } else {
+        router.push(item.href);
+      }
     },
     [router]
   );
