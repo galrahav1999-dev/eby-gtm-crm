@@ -108,12 +108,37 @@ const POLY = {
   capEmpty: "rgba(255,255,255,0.015)",
   capHas: "rgba(56,189,248,0.10)",
   capHover: "rgba(124,108,250,0.5)",
-  side: "rgba(120,160,255,0.08)",
+  capLocked: "rgba(124,108,250,0.26)",
+  side: "rgba(120,160,255,0.12)",
   stroke: "rgba(150,170,220,0.14)",
   strokeHot: "rgba(56,189,248,0.95)",
 };
 
-const ALT = { world: 2.5, country: 1.25, city: 0.55 };
+const ALT = { world: 2.5, country: 1.05, city: 0.5 };
+
+// A glowing Star of David marker (two overlapping triangles) in the owner's
+// color, built as a plain DOM element for react-globe's HTML layer. No custom
+// three.js objects, so it cannot blank the canvas.
+function makeStarEl(d: any, onClick: () => void): HTMLElement {
+  const el = document.createElement("div");
+  el.style.pointerEvents = "auto";
+  el.style.cursor = "pointer";
+  el.title = `${d.name} · ${d.kind === "org" ? "Organization" : "Person"}${d.owner ? " · " + d.owner : ""} · click to open`;
+  el.innerHTML =
+    `<div style="transition:transform .18s ease;transform-origin:center;">` +
+    `<svg width="22" height="22" viewBox="0 0 24 24" style="display:block;filter:drop-shadow(0 0 3px ${d.color}) drop-shadow(0 0 9px ${d.color});">` +
+    `<path d="M12 2.2 L21.3 18.3 L2.7 18.3 Z" fill="${d.color}" fill-opacity="0.22" stroke="${d.color}" stroke-width="1.5" stroke-linejoin="round"/>` +
+    `<path d="M12 21.8 L2.7 5.7 L21.3 5.7 Z" fill="${d.color}" fill-opacity="0.22" stroke="${d.color}" stroke-width="1.5" stroke-linejoin="round"/>` +
+    `</svg></div>`;
+  const inner = el.firstElementChild as HTMLElement;
+  el.onmouseenter = () => { inner.style.transform = "scale(1.5)"; };
+  el.onmouseleave = () => { inner.style.transform = "scale(1)"; };
+  el.onclick = (e) => {
+    e.stopPropagation();
+    onClick();
+  };
+  return el;
+}
 
 function tooltip(title: string, lines: string[]) {
   return `<div style="font-family:ui-sans-serif,system-ui;background:rgba(10,15,30,0.92);border:1px solid rgba(255,255,255,0.12);padding:8px 11px;border-radius:11px;color:#eaf0ff;font-size:12px;backdrop-filter:blur(8px);box-shadow:0 10px 34px rgba(0,0,0,0.5)">
@@ -153,7 +178,6 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [statsOpen, setStatsOpen] = useState(true);
   const [polys, setPolys] = useState<any[]>([]);
   const [hoverPoly, setHoverPoly] = useState<any>(null);
-  const [hoverPt, setHoverPt] = useState<any>(null);
 
   const [level, setLevel] = useState<Level>("world");
   const [selCountry, setSelCountry] = useState<string | null>(null);
@@ -252,29 +276,26 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   // This gives the "alive" glow using react-globe's native rings, no custom
   // three.js objects (which risk a second three instance and a blank canvas).
   const rings = useMemo(() => {
-    const pts: { lat: number; lng: number; rgb: [number, number, number]; big: boolean }[] = colored.map((p) => ({
-      lat: p.lat, lng: p.lng, rgb: toRgb(p.color), big: false,
-    }));
-    if (beamsOn && level === "world") pts.push({ lat: ISRAEL.lat, lng: ISRAEL.lng, rgb: [167, 139, 250], big: true });
+    const pts: { lat: number; lng: number; rgb: [number, number, number]; max: number; period: number }[] = [];
+    for (const p of colored) {
+      const rgb = toRgb(p.color);
+      // Two staggered rings per record: a quick inner pulse and a slow wide one,
+      // so each marker reads as a living sonar beacon, not a plain dot.
+      pts.push({ lat: p.lat, lng: p.lng, rgb, max: 1.1, period: 1100 });
+      pts.push({ lat: p.lat, lng: p.lng, rgb, max: 2.6, period: 2300 });
+    }
+    if (beamsOn && level === "world") pts.push({ lat: ISRAEL.lat, lng: ISRAEL.lng, rgb: [167, 139, 250], max: 4, period: 1400 });
     return pts;
   }, [colored, beamsOn, level]);
 
-  // Camera flights between levels.
-  useEffect(() => {
+  // Camera flights are fired directly from the click handlers (not an effect),
+  // so the zoom always plays even if a render hiccups.
+  function flyTo(lat: number, lng: number, altitude: number) {
     const g = globeRef.current;
     if (!g || !g.pointOfView) return;
-    if (level === "city" && selCity) {
-      const c = cityAgg.find((x) => x.key === selCity);
-      if (c) g.pointOfView({ lat: c.lat, lng: c.lng, altitude: ALT.city }, 1100);
-    } else if (level === "country" && selCountry) {
-      const c = countryAgg.find((x) => x.key === selCountry);
-      if (c) g.pointOfView({ lat: c.lat, lng: c.lng, altitude: ALT.country }, 1100);
-    } else {
-      const cur = g.pointOfView();
-      g.pointOfView({ lat: 18, lng: cur?.lng ?? -30, altitude: ALT.world }, 1100);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level, selCountry, selCity]);
+    if (g.controls) g.controls().autoRotate = false;
+    g.pointOfView({ lat, lng, altitude }, 1100);
+  }
 
   // Auto-rotation only at the world level; it locks once you drill in.
   useEffect(() => {
@@ -288,14 +309,18 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
 
   function drillToCountry(country: string) {
     if (!dataCountrySet.has(country)) return;
+    const c = countryAgg.find((x) => x.key === country);
     setHoverPoly(null);
     setSelCountry(country);
     setSelCity(null);
     setLevel("country");
+    if (c) flyTo(c.lat, c.lng, ALT.country);
   }
   function drillToCity(city: string) {
+    const c = cityAgg.find((x) => x.key === city);
     setSelCity(city);
     setLevel("city");
+    if (c) flyTo(c.lat, c.lng, ALT.city);
   }
   // The last step of the funnel: fly the camera down to the record, then open
   // its card once the flight has settled.
@@ -309,8 +334,20 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     }
   }
   function drillUp() {
-    if (level === "city") { setSelCity(null); setLevel("country"); }
-    else if (level === "country") { setSelCountry(null); setLevel("world"); }
+    if (level === "city") {
+      setSelCity(null);
+      setLevel("country");
+      const c = selCountry ? countryAgg.find((x) => x.key === selCountry) : null;
+      if (c) flyTo(c.lat, c.lng, ALT.country);
+    } else if (level === "country") {
+      setSelCountry(null);
+      setLevel("world");
+      const g = globeRef.current;
+      if (g && g.pointOfView) {
+        const cur = g.pointOfView();
+        g.pointOfView({ lat: 18, lng: cur?.lng ?? -30, altitude: ALT.world }, 1100);
+      }
+    }
   }
 
   // Escape backs out one level.
@@ -349,42 +386,41 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           showAtmosphere
           atmosphereColor={ph.atmo}
           atmosphereAltitude={0.22}
-          // Country shapes: world level only, hover highlight + click to drill.
-          polygonsData={level === "world" ? polys : []}
-          polygonAltitude={(d: any) => (d === hoverPoly ? 0.06 : 0.01)}
+          // Country shapes: hover + click to drill at world; once you drill in,
+          // only the selected country stays rendered, lifted and highlighted, so
+          // the view is clearly locked onto that territory.
+          polygonsData={level === "world" ? polys : polys.filter((p: any) => POLY_NAME_TO_EBY[p?.properties?.name] === selCountry)}
+          polygonAltitude={(d: any) => (level !== "world" ? 0.06 : d === hoverPoly ? 0.06 : 0.01)}
           polygonCapColor={(d: any) => {
+            if (level !== "world") return POLY.capLocked;
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             if (d === hoverPoly) return POLY.capHover;
             if (eby && dataCountrySet.has(eby)) return POLY.capHas;
             return POLY.capEmpty;
           }}
           polygonSideColor={() => POLY.side}
-          polygonStrokeColor={(d: any) => (d === hoverPoly ? POLY.strokeHot : POLY.stroke)}
-          polygonsTransitionDuration={240}
-          onPolygonHover={(p: any) => setHoverPoly(p || null)}
+          polygonStrokeColor={(d: any) => (level !== "world" || d === hoverPoly ? POLY.strokeHot : POLY.stroke)}
+          polygonsTransitionDuration={0}
+          onPolygonHover={(p: any) => level === "world" && setHoverPoly(p || null)}
           onPolygonClick={(d: any) => {
+            if (level !== "world") return;
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             if (eby) drillToCountry(eby);
           }}
           polygonLabel={(d: any) => {
+            if (level !== "world") return "";
             const eby = POLY_NAME_TO_EBY[d?.properties?.name];
             const c = eby ? countryAgg.find((n) => n.key === eby) : null;
             return tooltip(d?.properties?.name ?? "", [c ? `${c.value} record${c.value === 1 ? "" : "s"} · click to zoom in` : "No records here"]);
           }}
-          // Flat glowing dots, colored by owner (no tall columns).
-          pointsData={colored as object[]}
-          pointLat="lat"
-          pointLng="lng"
-          pointColor="color"
-          pointAltitude={(d: any) => (d === hoverPt ? 0.03 : 0.012)}
-          pointRadius={(d: any) => (d === hoverPt ? 0.75 : 0.5)}
-          pointResolution={18}
-          pointsTransitionDuration={0}
-          onPointClick={(d: any) => openRecord(d)}
-          onPointHover={(p: any) => setHoverPt(p || null)}
-          pointLabel={(d: any) =>
-            tooltip(d.name, [`${d.kind === "org" ? "Organization" : "Person"}${d.segment ? " · " + d.segment : ""}${d.owner ? " · " + d.owner : ""}`, "Click to open"])
-          }
+          // Glowing Star of David markers, colored by owner. They grow on hover
+          // and click-through to the record; the sonar rings below keep them alive.
+          htmlElementsData={colored as object[]}
+          htmlLat="lat"
+          htmlLng="lng"
+          htmlAltitude={0.008}
+          htmlElement={(d: any) => makeStarEl(d, () => openRecord(d))}
+          htmlTransitionDuration={0}
           // Animated flying beams to Jerusalem (world level).
           arcsData={beams}
           arcStartLat="startLat"
@@ -403,9 +439,9 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           ringLat="lat"
           ringLng="lng"
           ringColor={(d: any) => (t: number) => `rgba(${d.rgb[0]},${d.rgb[1]},${d.rgb[2]},${1 - t})`}
-          ringMaxRadius={(d: any) => (d.big ? 4 : 1.8)}
+          ringMaxRadius={(d: any) => d.max}
           ringPropagationSpeed={1.8}
-          ringRepeatPeriod={(d: any) => (d.big ? 1400 : 1800)}
+          ringRepeatPeriod={(d: any) => d.period}
         />
       </div>
 

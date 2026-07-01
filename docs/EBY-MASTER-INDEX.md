@@ -17,7 +17,13 @@ action at a time, plain confident language. When giving Gal setup steps, paste
 exact code/clicks (he is non-technical), never just a filename.
 
 ## The doc set (by category)
-- **EBY-MASTER-INDEX.md** (this) — start here; current snapshot + pointers.
+- **EBY-STATE-OF-THE-BUILD-2026-07-01.md** — START HERE NOW. The complete,
+  current record: vision, everything shipped with PR numbers, deployments,
+  gotchas, and what is next. Supersedes the snapshot below.
+- **EBY-AGENT-ORG-PROMPT.md** — the charter and bootstrap prompt for running a
+  full agent organization (research, PRD, build) on this codebase.
+- **EBY-PARITY-BACKLOG.md** — Cockpit parity tracker: done, deferred, next.
+- **EBY-MASTER-INDEX.md** (this) — doc map; the snapshot below is historical.
 - **EBY-TECH-HANDOFF.md** — TECHNICAL. Stack, architecture, data model, file map,
   the field-registry framework, env vars, conventions, how to run/verify.
 - **EBY-DESIGN-SYSTEM.md** — DESIGN. Implemented tokens, theming (light/brand-dark/
