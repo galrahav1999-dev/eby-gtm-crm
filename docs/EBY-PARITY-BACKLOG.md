@@ -96,10 +96,13 @@ first login, delete-account gated by 2FA, Google OAuth):
   Remaining (the account dossier overlay): an in-globe full-screen dossier with a
   This-city / Owner's-book browse rail and a "Draft follow-up for approval"
   button, plus the follow-up approvals drawer. Tracked next.
-- **Follow-ups-due queue (parity section 5, scoped).** A drawer of records whose
-  `next_step_date` is today or past, with an AI-drafted follow-up the owner can
-  Edit, Veto, or Log as an interaction. No real sending, to stay inside the
-  data-security policy and append-only interactions.
+- **Follow-up autopilot queue: DONE (scoped).** `components/crm/FollowUps.tsx` in
+  the topbar with a due-count badge, backed by `app/api/followups/route.ts`. Lists
+  people and deals whose `next_step_date` is today or past, each with a drafted
+  follow-up (built from the record, no LLM call). The owner can Edit, Veto, or Log
+  as an interaction (appends an Email interaction; never sends). Banner makes the
+  "nothing is sent in your name" rule explicit. Follow-up: swap the templated
+  draft for an LLM draft once per-user keys make that cheap.
 
 ---
 
