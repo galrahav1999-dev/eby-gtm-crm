@@ -26,6 +26,17 @@ export async function updateRecordAction(objectKey: string, id: string, fd: Form
   redirect(`/${objectKey}/${id}`);
 }
 
+/**
+ * Create a record and return its ids without redirecting, for the quick-add
+ * drawer (which stays open for "save and add another" or closes with a toast).
+ */
+export async function quickCreateAction(objectKey: string, fd: FormData) {
+  const d = def(objectKey);
+  const { id, display_id } = await createRecord(d, fd);
+  revalidatePath(`/${objectKey}`);
+  return { id, displayId: display_id, label: d.title(Object.fromEntries(fd.entries())) };
+}
+
 export async function archiveRecordAction(objectKey: string, id: string) {
   const d = def(objectKey);
   await archiveRecord(d, id);

@@ -69,9 +69,14 @@ first login, delete-account gated by 2FA, Google OAuth):
   in the topbar, opened by Cmd/Ctrl+K or the "Search or add" button. Debounced
   cross-object search via `app/api/search/route.ts` (queries every object's
   search fields), keyboard navigation, and "New X" quick-add actions for every
-  object. Still to do for full data-capture Tier 2: a quick-add drawer with
-  essential fields and "save and add another" (today the actions route to the
-  full new-record form).
+  object.
+- **Quick-add drawer: DONE.** `components/crm/QuickAddDrawer.tsx`. The palette's
+  "New X" actions open a right-side drawer with the object's quickCreate fields
+  (same registry widgets, inline FK create included), Save, Save and add another
+  (keeps the drawer open, clears the form, carries owner and segment forward),
+  a link to the full form, and a toast with an Open link. Data-capture Tier 2 is
+  complete. Backlog: a persistent global plus button in the topbar (the palette
+  covers create for now).
 - **Record dossier upgrade (parity section 4).** Full-screen identity-left,
   data-right detail; linked records as a hub; owner-book toggle; "log conversation"
   pre-targeted into the AI funnel.
