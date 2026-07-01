@@ -116,6 +116,30 @@ const POLY = {
 
 const ALT = { world: 2.5, country: 1.05, city: 0.5 };
 
+// A glowing Star of David marker (two overlapping triangles) in the owner's
+// color, built as a plain DOM element for react-globe's HTML layer. No custom
+// three.js objects, so it cannot blank the canvas.
+function makeStarEl(d: any, onClick: () => void): HTMLElement {
+  const el = document.createElement("div");
+  el.style.pointerEvents = "auto";
+  el.style.cursor = "pointer";
+  el.title = `${d.name} · ${d.kind === "org" ? "Organization" : "Person"}${d.owner ? " · " + d.owner : ""} · click to open`;
+  el.innerHTML =
+    `<div style="transition:transform .18s ease;transform-origin:center;">` +
+    `<svg width="22" height="22" viewBox="0 0 24 24" style="display:block;filter:drop-shadow(0 0 3px ${d.color}) drop-shadow(0 0 9px ${d.color});">` +
+    `<path d="M12 2.2 L21.3 18.3 L2.7 18.3 Z" fill="${d.color}" fill-opacity="0.22" stroke="${d.color}" stroke-width="1.5" stroke-linejoin="round"/>` +
+    `<path d="M12 21.8 L2.7 5.7 L21.3 5.7 Z" fill="${d.color}" fill-opacity="0.22" stroke="${d.color}" stroke-width="1.5" stroke-linejoin="round"/>` +
+    `</svg></div>`;
+  const inner = el.firstElementChild as HTMLElement;
+  el.onmouseenter = () => { inner.style.transform = "scale(1.5)"; };
+  el.onmouseleave = () => { inner.style.transform = "scale(1)"; };
+  el.onclick = (e) => {
+    e.stopPropagation();
+    onClick();
+  };
+  return el;
+}
+
 function tooltip(title: string, lines: string[]) {
   return `<div style="font-family:ui-sans-serif,system-ui;background:rgba(10,15,30,0.92);border:1px solid rgba(255,255,255,0.12);padding:8px 11px;border-radius:11px;color:#eaf0ff;font-size:12px;backdrop-filter:blur(8px);box-shadow:0 10px 34px rgba(0,0,0,0.5)">
     <div style="font-weight:600">${title}</div>${lines.map((l) => `<div style="color:#9fb0d6;margin-top:1px">${l}</div>`).join("")}</div>`;
@@ -154,7 +178,6 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [statsOpen, setStatsOpen] = useState(true);
   const [polys, setPolys] = useState<any[]>([]);
   const [hoverPoly, setHoverPoly] = useState<any>(null);
-  const [hoverPt, setHoverPt] = useState<any>(null);
 
   const [level, setLevel] = useState<Level>("world");
   const [selCountry, setSelCountry] = useState<string | null>(null);
@@ -390,21 +413,14 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
             const c = eby ? countryAgg.find((n) => n.key === eby) : null;
             return tooltip(d?.properties?.name ?? "", [c ? `${c.value} record${c.value === 1 ? "" : "s"} · click to zoom in` : "No records here"]);
           }}
-          // Luminous beacon dots, colored by owner: flat discs that pulse via the
-          // rings below, not tall cylinders.
-          pointsData={colored as object[]}
-          pointLat="lat"
-          pointLng="lng"
-          pointColor="color"
-          pointAltitude={(d: any) => (d === hoverPt ? 0.018 : 0.004)}
-          pointRadius={(d: any) => (d === hoverPt ? 0.62 : 0.34)}
-          pointResolution={24}
-          pointsTransitionDuration={0}
-          onPointClick={(d: any) => openRecord(d)}
-          onPointHover={(p: any) => setHoverPt(p || null)}
-          pointLabel={(d: any) =>
-            tooltip(d.name, [`${d.kind === "org" ? "Organization" : "Person"}${d.segment ? " · " + d.segment : ""}${d.owner ? " · " + d.owner : ""}`, "Click to open"])
-          }
+          // Glowing Star of David markers, colored by owner. They grow on hover
+          // and click-through to the record; the sonar rings below keep them alive.
+          htmlElementsData={colored as object[]}
+          htmlLat="lat"
+          htmlLng="lng"
+          htmlAltitude={0.008}
+          htmlElement={(d: any) => makeStarEl(d, () => openRecord(d))}
+          htmlTransitionDuration={0}
           // Animated flying beams to Jerusalem (world level).
           arcsData={beams}
           arcStartLat="startLat"
