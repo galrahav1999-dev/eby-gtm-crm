@@ -41,7 +41,7 @@ export default async function Home() {
   for (const o of orgs ?? []) {
     const c = resolveCoords(o.country, o.city);
     if (!c) continue;
-    const j = jitter(o.id);
+    const j = jitter(o.id, 2.6);
     points.push({
       id: o.id, kind: "org", name: o.name, label: `${o.name}${o.city ? " · " + o.city : ""}`,
       owner: o.owner ?? null, segment: o.segment ?? null, country: o.country ?? null, city: o.city ?? null,
@@ -51,7 +51,7 @@ export default async function Home() {
   for (const p of people ?? []) {
     const c = resolveCoords(p.country, p.city);
     if (!c) continue;
-    const j = jitter(p.id);
+    const j = jitter(p.id, 2.6);
     points.push({
       id: p.id, kind: "person", name: personName(p), label: `${personName(p)}${p.city ? " · " + p.city : ""}`,
       owner: p.owner ?? null, segment: p.segment ?? null, country: p.country ?? null, city: p.city ?? null,

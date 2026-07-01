@@ -291,6 +291,17 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     setSelCity(city);
     setLevel("city");
   }
+  // The last step of the funnel: fly the camera down to the record, then open
+  // its card once the flight has settled.
+  function openRecord(p: { lat: number; lng: number; href: string }) {
+    const g = globeRef.current;
+    if (g && g.pointOfView) {
+      g.pointOfView({ lat: p.lat, lng: p.lng, altitude: 0.32 }, 650);
+      window.setTimeout(() => router.push(p.href), 680);
+    } else {
+      router.push(p.href);
+    }
+  }
   function drillUp() {
     if (level === "city") { setSelCity(null); setLevel("country"); }
     else if (level === "country") { setSelCountry(null); setLevel("world"); }
@@ -363,7 +374,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           pointRadius={(d: any) => (d === hoverPt ? 0.75 : 0.5)}
           pointResolution={18}
           pointsTransitionDuration={0}
-          onPointClick={(d: any) => router.push(d.href)}
+          onPointClick={(d: any) => openRecord(d)}
           onPointHover={(p: any) => setHoverPt(p || null)}
           pointLabel={(d: any) =>
             tooltip(d.name, [`${d.kind === "org" ? "Organization" : "Person"}${d.segment ? " · " + d.segment : ""}${d.owner ? " · " + d.owner : ""}`, "Click to open"])
@@ -529,7 +540,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
                     </button>
                   ))
                 : shown.map((p) => (
-                    <button key={p.id} onClick={() => router.push(p.href)} className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-surface-muted">
+                    <button key={p.id} onClick={() => openRecord(p)} className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition hover:bg-surface-muted">
                       <OwnerAvatar owner={p.owner} size={22} />
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-medium text-ink">{p.name}</div>
