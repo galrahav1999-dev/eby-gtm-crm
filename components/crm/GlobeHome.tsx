@@ -3,10 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import * as THREE from "three";
 import { feature } from "topojson-client";
 import { ownerColor } from "@/lib/colors";
 import { OwnerAvatar } from "./ui";
+
+// Parse an owner color to [r,g,b] so pulsing rings can fade in that hue. Owners
+// use hex; anything else falls back to the beam violet.
+function toRgb(c: string): [number, number, number] {
+  if (c.startsWith("#")) {
+    const h = c.slice(1);
+    const n = h.length === 3 ? h.split("").map((x) => x + x).join("") : h;
+    const v = parseInt(n, 16);
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  }
+  return [167, 139, 250];
+}
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
@@ -104,20 +115,6 @@ const POLY = {
 
 const ALT = { world: 2.5, country: 1.25, city: 0.55 };
 
-// Soft radial-gradient texture for the additive neon bloom on each dot.
-function makeGlowTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 64;
-  const ctx = c.getContext("2d")!;
-  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, "rgba(255,255,255,1)");
-  g.addColorStop(0.25, "rgba(255,255,255,0.7)");
-  g.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
-}
-
 function tooltip(title: string, lines: string[]) {
   return `<div style="font-family:ui-sans-serif,system-ui;background:rgba(10,15,30,0.92);border:1px solid rgba(255,255,255,0.12);padding:8px 11px;border-radius:11px;color:#eaf0ff;font-size:12px;backdrop-filter:blur(8px);box-shadow:0 10px 34px rgba(0,0,0,0.5)">
     <div style="font-weight:600">${title}</div>${lines.map((l) => `<div style="color:#9fb0d6;margin-top:1px">${l}</div>`).join("")}</div>`;
@@ -161,8 +158,6 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   const [level, setLevel] = useState<Level>("world");
   const [selCountry, setSelCountry] = useState<string | null>(null);
   const [selCity, setSelCity] = useState<string | null>(null);
-
-  const glowTex = useMemo(() => (typeof document === "undefined" ? null : makeGlowTexture()), []);
 
   useEffect(() => setPhase(currentPhase()), []);
   useEffect(() => {
@@ -251,6 +246,17 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
         startLat: p.lat, startLng: p.lng, endLat: ISRAEL.lat, endLng: ISRAEL.lng,
         color: BEAM_COLOR, speed: 2600 + ((i * 137) % 2600), gap: ((i * 53) % 100) / 100,
       }));
+  }, [colored, beamsOn, level]);
+
+  // A pulsing halo on every record (owner colored), plus the Jerusalem pulse.
+  // This gives the "alive" glow using react-globe's native rings, no custom
+  // three.js objects (which risk a second three instance and a blank canvas).
+  const rings = useMemo(() => {
+    const pts: { lat: number; lng: number; rgb: [number, number, number]; big: boolean }[] = colored.map((p) => ({
+      lat: p.lat, lng: p.lng, rgb: toRgb(p.color), big: false,
+    }));
+    if (beamsOn && level === "world") pts.push({ lat: ISRAEL.lat, lng: ISRAEL.lng, rgb: [167, 139, 250], big: true });
+    return pts;
   }, [colored, beamsOn, level]);
 
   // Camera flights between levels.
@@ -379,34 +385,6 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           pointLabel={(d: any) =>
             tooltip(d.name, [`${d.kind === "org" ? "Organization" : "Person"}${d.segment ? " · " + d.segment : ""}${d.owner ? " · " + d.owner : ""}`, "Click to open"])
           }
-          // Additive neon bloom on each dot.
-          customLayerData={colored as object[]}
-          customThreeObject={(d: any) => {
-            try {
-              if (!glowTex) return new THREE.Object3D();
-              const sprite = new THREE.Sprite(
-                new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(d.color), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0.85 })
-              );
-              sprite.raycast = () => {};
-              return sprite;
-            } catch {
-              return new THREE.Object3D();
-            }
-          }}
-          customThreeObjectUpdate={(obj: any, d: any) => {
-            try {
-              const g = globeRef.current;
-              if (!g || typeof g.getCoords !== "function" || !obj?.material) return;
-              const c = g.getCoords(d.lat, d.lng, 0.012);
-              if (!c) return;
-              obj.position.set(c.x, c.y, c.z);
-              (obj.material as THREE.SpriteMaterial).color.set(d.color);
-              const s = d === hoverPt ? 13 : 9;
-              obj.scale.set(s, s, 1);
-            } catch {
-              /* never let a transient three.js state crash the view */
-            }
-          }}
           // Animated flying beams to Jerusalem (world level).
           arcsData={beams}
           arcStartLat="startLat"
@@ -421,11 +399,13 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           arcDashInitialGap={(d: any) => d.gap}
           arcDashAnimateTime={(d: any) => d.speed}
           arcsTransitionDuration={400}
-          ringsData={beams.length ? [{ lat: ISRAEL.lat, lng: ISRAEL.lng }] : []}
-          ringColor={() => (t: number) => `rgba(167,139,250,${1 - t})`}
-          ringMaxRadius={4}
-          ringPropagationSpeed={2}
-          ringRepeatPeriod={1400}
+          ringsData={rings}
+          ringLat="lat"
+          ringLng="lng"
+          ringColor={(d: any) => (t: number) => `rgba(${d.rgb[0]},${d.rgb[1]},${d.rgb[2]},${1 - t})`}
+          ringMaxRadius={(d: any) => (d.big ? 4 : 1.8)}
+          ringPropagationSpeed={1.8}
+          ringRepeatPeriod={(d: any) => (d.big ? 1400 : 1800)}
         />
       </div>
 
