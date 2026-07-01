@@ -253,29 +253,26 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
   // This gives the "alive" glow using react-globe's native rings, no custom
   // three.js objects (which risk a second three instance and a blank canvas).
   const rings = useMemo(() => {
-    const pts: { lat: number; lng: number; rgb: [number, number, number]; big: boolean }[] = colored.map((p) => ({
-      lat: p.lat, lng: p.lng, rgb: toRgb(p.color), big: false,
-    }));
-    if (beamsOn && level === "world") pts.push({ lat: ISRAEL.lat, lng: ISRAEL.lng, rgb: [167, 139, 250], big: true });
+    const pts: { lat: number; lng: number; rgb: [number, number, number]; max: number; period: number }[] = [];
+    for (const p of colored) {
+      const rgb = toRgb(p.color);
+      // Two staggered rings per record: a quick inner pulse and a slow wide one,
+      // so each marker reads as a living sonar beacon, not a plain dot.
+      pts.push({ lat: p.lat, lng: p.lng, rgb, max: 1.1, period: 1100 });
+      pts.push({ lat: p.lat, lng: p.lng, rgb, max: 2.6, period: 2300 });
+    }
+    if (beamsOn && level === "world") pts.push({ lat: ISRAEL.lat, lng: ISRAEL.lng, rgb: [167, 139, 250], max: 4, period: 1400 });
     return pts;
   }, [colored, beamsOn, level]);
 
-  // Camera flights between levels.
-  useEffect(() => {
+  // Camera flights are fired directly from the click handlers (not an effect),
+  // so the zoom always plays even if a render hiccups.
+  function flyTo(lat: number, lng: number, altitude: number) {
     const g = globeRef.current;
     if (!g || !g.pointOfView) return;
-    if (level === "city" && selCity) {
-      const c = cityAgg.find((x) => x.key === selCity);
-      if (c) g.pointOfView({ lat: c.lat, lng: c.lng, altitude: ALT.city }, 1100);
-    } else if (level === "country" && selCountry) {
-      const c = countryAgg.find((x) => x.key === selCountry);
-      if (c) g.pointOfView({ lat: c.lat, lng: c.lng, altitude: ALT.country }, 1100);
-    } else {
-      const cur = g.pointOfView();
-      g.pointOfView({ lat: 18, lng: cur?.lng ?? -30, altitude: ALT.world }, 1100);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level, selCountry, selCity]);
+    if (g.controls) g.controls().autoRotate = false;
+    g.pointOfView({ lat, lng, altitude }, 1100);
+  }
 
   // Auto-rotation only at the world level; it locks once you drill in.
   useEffect(() => {
@@ -289,14 +286,18 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
 
   function drillToCountry(country: string) {
     if (!dataCountrySet.has(country)) return;
+    const c = countryAgg.find((x) => x.key === country);
     setHoverPoly(null);
     setSelCountry(country);
     setSelCity(null);
     setLevel("country");
+    if (c) flyTo(c.lat, c.lng, ALT.country);
   }
   function drillToCity(city: string) {
+    const c = cityAgg.find((x) => x.key === city);
     setSelCity(city);
     setLevel("city");
+    if (c) flyTo(c.lat, c.lng, ALT.city);
   }
   // The last step of the funnel: fly the camera down to the record, then open
   // its card once the flight has settled.
@@ -310,8 +311,20 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
     }
   }
   function drillUp() {
-    if (level === "city") { setSelCity(null); setLevel("country"); }
-    else if (level === "country") { setSelCountry(null); setLevel("world"); }
+    if (level === "city") {
+      setSelCity(null);
+      setLevel("country");
+      const c = selCountry ? countryAgg.find((x) => x.key === selCountry) : null;
+      if (c) flyTo(c.lat, c.lng, ALT.country);
+    } else if (level === "country") {
+      setSelCountry(null);
+      setLevel("world");
+      const g = globeRef.current;
+      if (g && g.pointOfView) {
+        const cur = g.pointOfView();
+        g.pointOfView({ lat: 18, lng: cur?.lng ?? -30, altitude: ALT.world }, 1100);
+      }
+    }
   }
 
   // Escape backs out one level.
@@ -364,7 +377,7 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           }}
           polygonSideColor={() => POLY.side}
           polygonStrokeColor={(d: any) => (level !== "world" || d === hoverPoly ? POLY.strokeHot : POLY.stroke)}
-          polygonsTransitionDuration={240}
+          polygonsTransitionDuration={0}
           onPolygonHover={(p: any) => level === "world" && setHoverPoly(p || null)}
           onPolygonClick={(d: any) => {
             if (level !== "world") return;
@@ -410,9 +423,9 @@ export function GlobeHome({ points, stats }: { points: GlobePoint[]; stats: Stat
           ringLat="lat"
           ringLng="lng"
           ringColor={(d: any) => (t: number) => `rgba(${d.rgb[0]},${d.rgb[1]},${d.rgb[2]},${1 - t})`}
-          ringMaxRadius={(d: any) => (d.big ? 4 : 2.4)}
-          ringPropagationSpeed={2}
-          ringRepeatPeriod={(d: any) => (d.big ? 1400 : 1200)}
+          ringMaxRadius={(d: any) => d.max}
+          ringPropagationSpeed={1.8}
+          ringRepeatPeriod={(d: any) => d.period}
         />
       </div>
 
