@@ -85,14 +85,24 @@ first login, delete-account gated by 2FA, Google OAuth):
   prefilled. Follow-ups: an owner-book toggle inside the card, and "Log
   conversation" deep-linking into the AI funnel's attach-to-existing step (today
   it links to /logger; the funnel does not yet take a pre-target param).
-- **Four-level globe drill (parity section 1).** Optional World, Country, City,
-  Company camera flights layered on top of the current beam globe, without
-  changing the Jerusalem-beam metaphor. The Cockpit `GlobeView.tsx` is the
-  reference for the camera and beam-height-by-value behavior.
-- **Follow-ups-due queue (parity section 5, scoped).** A drawer of records whose
-  `next_step_date` is today or past, with an AI-drafted follow-up the owner can
-  Edit, Veto, or Log as an interaction. No real sending, to stay inside the
-  data-security policy and append-only interactions.
+- **Globe drill and bloom beams: DONE (core), preview-first.** GlobeHome rebuilt
+  to match the Cockpit reference: vertical neon beams with an additive bloom tip
+  colored by owner, beam height by record count, flattening to dots when drilled
+  in. World to Country to City drill with camera flights, a right-side drill panel
+  (cities, then records), a top-center Back button with Esc, and auto-rotate that
+  locks on drill. Country-polygon hover highlights and click drills in. Clicking a
+  record opens its detail dossier. Backdrop (day/night/sunrise/sunset) unchanged.
+  Gal replaced the Jerusalem-arc beams with these vertical value beams.
+  Remaining (the account dossier overlay): an in-globe full-screen dossier with a
+  This-city / Owner's-book browse rail and a "Draft follow-up for approval"
+  button, plus the follow-up approvals drawer. Tracked next.
+- **Follow-up autopilot queue: DONE (scoped).** `components/crm/FollowUps.tsx` in
+  the topbar with a due-count badge, backed by `app/api/followups/route.ts`. Lists
+  people and deals whose `next_step_date` is today or past, each with a drafted
+  follow-up (built from the record, no LLM call). The owner can Edit, Veto, or Log
+  as an interaction (appends an Email interaction; never sends). Banner makes the
+  "nothing is sent in your name" rule explicit. Follow-up: swap the templated
+  draft for an LLM draft once per-user keys make that cheap.
 
 ---
 
